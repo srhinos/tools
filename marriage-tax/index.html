@@ -1100,10 +1100,10 @@
                 var ctcEffect = 0;
                 if (hasKids) { ctcEffect = ctc(kids, incA + incB, Y.ctcPhM, Y.ctcPer) - ctc(kids, hohInc, Y.ctcPhS, Y.ctcPer); }
                 var stateEffect = 0;
-                if (st.single && st.mfj) {
-                    var ssHoh = stateEffTax(hohInc - (st.stdS || 0), st, true);
-                    var ssSin = stateEffTax(sinInc - (st.stdS || 0), st, true);
-                    var sm = stateEffTax(incA + incB - (st.stdM || 0), st, false);
+                if (st.type !== 'none') {
+                    var ssHoh = calcActualStateTax(hohInc, st, true);
+                    var ssSin = calcActualStateTax(sinInc, st, true);
+                    var sm = calcActualStateTax(incA + incB, st, false);
                     stateEffect = (ssHoh + ssSin) - sm;
                 }
                 var medEffect = 0;
@@ -1120,6 +1120,11 @@
                 var singlesT = sHoh + sSin - (hasKids ? ctc(kids, hohInc, Y.ctcPhS, Y.ctcPer) : 0);
                 var marriedT = mFf - (hasKids ? ctc(kids, incA + incB, Y.ctcPhM, Y.ctcPer) : 0);
                 if (med) { singlesT += Math.max(0, incA - 2e5) * .009 + Math.max(0, incB - 2e5) * .009; marriedT += Math.max(0, incA + incB - 25e4) * .009; }
+                if (niit) {
+                    var invA2 = Math.max(0, (incA - 15e4) * .3), invB2 = Math.max(0, (incB - 15e4) * .3);
+                    singlesT += .038 * Math.min(invA2, Math.max(0, incA - 2e5)) + .038 * Math.min(invB2, Math.max(0, incB - 2e5));
+                    marriedT += .038 * Math.min(invA2 + invB2, Math.max(0, incA + incB - 25e4));
+                }
                 singlesT += stTaxHoh + stTaxSin;
                 marriedT += stTaxM;
                 var total = incA + incB;
@@ -1141,7 +1146,7 @@
                 var mTx = Math.max(0, incA + incB - Y.stdM);
                 var fed = sTx - taxBr(mTx, Y.mfj);
                 var state = 0;
-                if (st.single && st.mfj) { state = (stateEffTax(incA - (st.stdS || 0), st, true) + stateEffTax(incB - (st.stdS || 0), st, true)) - stateEffTax(incA + incB - (st.stdM || 0), st, false); }
+                if (st.type !== 'none') { state = calcActualStateTax(hohInc, st, true) + calcActualStateTax(sinInc, st, true) - calcActualStateTax(incA + incB, st, false); }
                 return fed + state;
             }
 
@@ -1222,14 +1227,21 @@
                 var ctcHoh = hasKids ? ctc(p.kids, hohInc, Y.ctcPhS, Y.ctcPer) : 0;
                 var medHoh = p.med ? Math.max(0, hohInc - 2e5) * .009 : 0;
                 var medSin = p.med ? Math.max(0, sinInc - 2e5) * .009 : 0;
-                var fedHoh = sHoh - ctcHoh + medHoh, fedSin = sSin + medSin;
+                var niitHoh = 0, niitSin = 0, niitM = 0;
+                if (p.niit) {
+                    var invH = Math.max(0, (hohInc - 15e4) * .3), invSn = Math.max(0, (sinInc - 15e4) * .3);
+                    niitHoh = .038 * Math.min(invH, Math.max(0, hohInc - 2e5));
+                    niitSin = .038 * Math.min(invSn, Math.max(0, sinInc - 2e5));
+                    niitM = .038 * Math.min(invH + invSn, Math.max(0, p.incA + p.incB - 25e4));
+                }
+                var fedHoh = sHoh - ctcHoh + medHoh + niitHoh, fedSin = sSin + medSin + niitSin;
 
                 // Married
                 var mTx = Math.max(0, wageA + wageB - dedM);
                 var mF = taxBr(mTx, Y.mfj);
                 var ctcM = hasKids ? ctc(p.kids, p.incA + p.incB, Y.ctcPhM, Y.ctcPer) : 0;
                 var medM = p.med ? Math.max(0, p.incA + p.incB - 25e4) * .009 : 0;
-                var fedM = mF - ctcM + medM;
+                var fedM = mF - ctcM + medM + niitM;
 
                 var singlesTotal = fedHoh + fedSin + stTaxHoh + stTaxSin;
                 var marriedTotal = fedM + stTaxM;
@@ -1259,6 +1271,7 @@
                 h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(sHoh) + '</span></div>';
                 if (hasKids) h += '<div class="step"><span class="step-label">Child Tax Credit (' + p.kids + ' kid' + (p.kids > 1 ? 's' : '') + ', phaseout at ' + $(Y.ctcPhS) + '):</span> <span class="step-hl">\u2212' + $(ctcHoh) + '</span></div>';
                 if (medHoh > 0) h += '<div class="step"><span class="step-label">Medicare surtax (0.9% on wages above $200K):</span> <span class="step-neg">+' + $(medHoh) + '</span></div>';
+                if (niitHoh > 0) h += '<div class="step"><span class="step-label">NIIT (3.8% on investment income above $200K):</span> <span class="step-neg">+' + $(niitHoh) + '</span></div>';
                 if (stTaxHoh > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxHoh) + '</span></div>';
                 h += '<div class="subtotal">' + hohWho + ' total: ' + $(fedHoh + stTaxHoh) + '</div>';
 
@@ -1277,6 +1290,7 @@
                 h += '<div class="step"><span class="step-label">Taxable income:</span> <span class="step-val"><b>' + $(sinTx) + '</b></span></div>';
                 h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(sSin) + '</span></div>';
                 if (medSin > 0) h += '<div class="step"><span class="step-label">Medicare surtax:</span> <span class="step-neg">+' + $(medSin) + '</span></div>';
+                if (niitSin > 0) h += '<div class="step"><span class="step-label">NIIT:</span> <span class="step-neg">+' + $(niitSin) + '</span></div>';
                 if (stTaxSin > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxSin) + '</span></div>';
                 h += '<div class="subtotal">' + sinWho + ' total: ' + $(fedSin + stTaxSin) + '</div>';
                 h += '<div class="subtotal" style="font-size:13px;margin-top:12px;color:#fb923c">Combined as two singles: <b>' + $(singlesTotal) + '</b></div>';
@@ -1303,6 +1317,7 @@
                 h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(mF) + '</span></div>';
                 if (hasKids) h += '<div class="step"><span class="step-label">Child Tax Credit (phaseout at ' + $(Y.ctcPhM) + ' for MFJ):</span> <span class="step-hl">\u2212' + $(ctcM) + '</span></div>';
                 if (medM > 0) h += '<div class="step"><span class="step-label">Medicare surtax (0.9% above $250K for MFJ):</span> <span class="step-neg">+' + $(medM) + '</span></div>';
+                if (niitM > 0) h += '<div class="step"><span class="step-label">NIIT (3.8% above $250K for MFJ):</span> <span class="step-neg">+' + $(niitM) + '</span></div>';
                 if (stTaxM > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxM) + '</span></div>';
                 h += '<div class="subtotal" style="font-size:13px;margin-top:12px;color:#818cf8">Married total: <b>' + $(marriedTotal) + '</b></div>';
                 h += '</div>';
