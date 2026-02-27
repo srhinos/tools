@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Should You Get Married? (Tax Edition)</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: #0b0b1a;
+            color: #cbd5e1;
+            font-family: 'DM Sans', system-ui, sans-serif;
+            padding: 20px 16px;
+            min-height: 100vh
+        }
+
+        .wrap {
+            max-width: 860px;
+            margin: 0 auto
+        }
+
+        h1 {
+            font-family: 'Sora', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -.5px
+        }
+
+        .sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 2px;
+            margin-bottom: 20px
+        }
+
+        .yr-row {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px
+        }
+
+        .yr-btn {
+            padding: 7px 22px;
+            font: 600 13px 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #64748b;
+            transition: all .15s
+        }
+
+        .yr-btn:first-child {
+            border-radius: 8px 0 0 8px
+        }
+
+        .yr-btn:last-child {
+            border-radius: 0 8px 8px 0
+        }
+
+        .yr-btn.on {
+            background: #6366f1;
+            color: #fff;
+            border-color: #6366f1
+        }
+
+        .inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+            margin-bottom: 20px
+        }
+
+        @media(max-width:600px) {
+            .inputs {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .inp {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .inp .lbl {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            font-weight: 600
+        }
+
+        .inp .val {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 15px
+        }
+
+        .inp input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #1e293b;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 2px
+        }
+
+        .inp input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer
+        }
+
+        #incA::-webkit-slider-thumb {
+            background: #fb923c
+        }
+
+        #incB::-webkit-slider-thumb {
+            background: #818cf8
+        }
+
+        .row2 {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 8px
+        }
+
+        @media(max-width:600px) {
+            .row2 {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .row2 .inp:first-child {
+                grid-column: 1/-1
+            }
+        }
+
+        .inp select {
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font: 500 13px 'DM Sans', sans-serif;
+            cursor: pointer;
+            width: 100%
+        }
+
+        .inp select:focus {
+            outline: 1px solid #6366f1;
+            border-color: #6366f1
+        }
+
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+            height: 36px
+        }
+
+        .seg-ctrl {
+            display: flex;
+            gap: 0;
+            height: 32px
+        }
+
+        .seg-btn {
+            padding: 0 12px;
+            font: 500 11px 'DM Sans', sans-serif;
+            cursor: pointer;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #64748b;
+            transition: all .15s;
+            white-space: nowrap
+        }
+
+        .seg-btn:first-child {
+            border-radius: 6px 0 0 6px
+        }
+
+        .seg-btn:last-child {
+            border-radius: 0 6px 6px 0
+        }
+
+        .seg-btn:not(:first-child) {
+            border-left: none
+        }
+
+        .seg-btn.on {
+            background: #6366f1;
+            color: #fff;
+            border-color: #6366f1
+        }
+
+        .seg-btn.on+.seg-btn {
+            border-left-color: #6366f1
+        }
+
+        .fine-tune {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            padding: 8px 0 16px;
+            flex-wrap: wrap
+        }
+
+        .ft-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #64748b
+        }
+
+        .ft-item label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .ft-item input[type=checkbox] {
+            accent-color: #6366f1;
+            width: 14px;
+            height: 14px
+        }
+
+        .assume-toggle {
+            background: none;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            color: #64748b;
+            font: 500 12px 'DM Sans', sans-serif;
+            cursor: pointer;
+            padding: 7px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .15s;
+            margin-bottom: 4px
+        }
+
+        .assume-toggle:hover {
+            border-color: #334155;
+            color: #94a3b8
+        }
+
+        .assume-toggle .arr {
+            font-size: 8px;
+            transition: transform .2s
+        }
+
+        .assume-toggle.open .arr {
+            transform: rotate(90deg)
+        }
+
+        .assume-panel {
+            display: none;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 16px
+        }
+
+        .assume-panel.open {
+            display: block
+        }
+
+        .assume-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px
+        }
+
+        .assume-section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #64748b;
+            font-weight: 600;
+            margin: 12px 0 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #1e293b
+        }
+
+        .assume-section-label:first-child {
+            margin-top: 0
+        }
+
+        @media(max-width:500px) {
+            .assume-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .assume-panel .inp {
+            gap: 2px
+        }
+
+        .assume-panel .inp .lbl {
+            font-size: 10px
+        }
+
+        .assume-panel .inp .val {
+            font-size: 13px
+        }
+
+        .assume-panel .inp .val.dirty {
+            color: #fb923c
+        }
+
+        .assume-panel .inp input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #1e293b;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 2px
+        }
+
+        .assume-panel .inp input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: #64748b;
+            transition: background .15s
+        }
+
+        .assume-panel .inp input[type="range"].dirty::-webkit-slider-thumb {
+            background: #fb923c
+        }
+
+        .af-bench {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1px
+        }
+
+        .af-bench span {
+            font-size: 9px;
+            color: #334155;
+            letter-spacing: .3px
+        }
+
+        .af-bench .avg {
+            color: #475569;
+            font-weight: 600
+        }
+
+        .assume-panel .inp.inert {
+            opacity: .35;
+            pointer-events: auto
+        }
+
+        .assume-panel .inp.inert input[type="range"] {
+            pointer-events: none
+        }
+
+        .assume-panel .inp.inert .seg-ctrl {
+            pointer-events: none
+        }
+
+        .seg-sm {
+            display: inline-flex
+        }
+
+        .seg-sm .seg-btn {
+            padding: 3px 12px;
+            font-size: 10px
+        }
+
+        .af-why {
+            display: none;
+            font-size: 10px;
+            color: #475569;
+            font-style: italic;
+            margin-top: 1px
+        }
+
+        .assume-panel .inp.inert .af-why {
+            display: block
+        }
+
+        .assume-panel .inp.inert .af-bench {
+            display: none
+        }
+
+        .assume-reset {
+            background: none;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            color: #64748b;
+            font: 500 11px 'DM Sans', sans-serif;
+            padding: 5px 12px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all .15s
+        }
+
+        .assume-reset:hover {
+            border-color: #f87171;
+            color: #f87171
+        }
+
+        .result {
+            text-align: center;
+            padding: 24px 16px 20px;
+            margin-bottom: 16px
+        }
+
+        .result .amount {
+            font-family: 'Sora', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            line-height: 1.1
+        }
+
+        @media(max-width:500px) {
+            .result .amount {
+                font-size: 36px
+            }
+        }
+
+        .result .label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 4px
+        }
+
+        .result .rates {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 8px
+        }
+
+        .result .rates span {
+            margin: 0 8px
+        }
+
+        .result .explain {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 12px;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5
+        }
+
+        .breakdown {
+            margin-bottom: 20px
+        }
+
+        .bar-title {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            font-weight: 600;
+            margin-bottom: 8px
+        }
+
+        .drv-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+            height: 22px
+        }
+
+        .drv-label {
+            width: 120px;
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        .drv-track {
+            flex: 1;
+            height: 100%;
+            position: relative;
+            border-left: 1px solid #334155
+        }
+
+        .drv-bar {
+            height: 100%;
+            border-radius: 0 3px 3px 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: width .3s ease
+        }
+
+        .drv-bar.neg {
+            border-radius: 3px 0 0 3px;
+            right: 0;
+            left: auto
+        }
+
+        .drv-val {
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            padding: 0 6px;
+            line-height: 22px
+        }
+
+        @media(max-width:500px) {
+            .drv-label {
+                width: 80px;
+                font-size: 10px
+            }
+        }
+
+        .chart-wrap {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            margin-bottom: 8px
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: #64748b;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px
+        }
+
+        .chart-legend .sw {
+            display: inline-block;
+            width: 14px;
+            height: 3px;
+            vertical-align: middle;
+            margin-right: 4px;
+            border-radius: 1px
+        }
+
+        .note {
+            background: #0f172a;
+            border-left: 3px solid #334155;
+            border-radius: 0 8px 8px 0;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5
+        }
+
+        .note b {
+            color: #e2e8f0;
+            font-weight: 600
+        }
+
+        .exp-toggle {
+            background: none;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            color: #94a3b8;
+            font: 500 12px 'DM Sans', sans-serif;
+            cursor: pointer;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .15s;
+            margin-bottom: 4px
+        }
+
+        .exp-toggle:hover {
+            border-color: #334155;
+            color: #e2e8f0
+        }
+
+        .exp-toggle .arr {
+            font-size: 8px;
+            transition: transform .2s
+        }
+
+        .exp-toggle.open .arr {
+            transform: rotate(90deg)
+        }
+
+        .exp-panel {
+            display: none;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.7;
+            overflow-x: auto
+        }
+
+        .exp-panel.open {
+            display: block
+        }
+
+        .exp-panel b {
+            color: #e2e8f0;
+            font-weight: 600
+        }
+
+        .exp-panel .scenario {
+            margin-bottom: 16px
+        }
+
+        .exp-panel .scenario-title {
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .exp-panel .scenario-title .pill {
+            font-size: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #fff
+        }
+
+        .exp-panel .step {
+            padding-left: 16px;
+            border-left: 2px solid #1e293b;
+            margin-bottom: 6px
+        }
+
+        .exp-panel .step-label {
+            color: #64748b;
+            font-size: 11px
+        }
+
+        .exp-panel .step-val {
+            color: #cbd5e1;
+            font-weight: 500
+        }
+
+        .exp-panel .step-hl {
+            color: #34d399;
+            font-weight: 600
+        }
+
+        .exp-panel .step-neg {
+            color: #f87171;
+            font-weight: 600
+        }
+
+        .exp-panel .subtotal {
+            font-weight: 600;
+            color: #e2e8f0;
+            padding: 6px 0 2px;
+            border-top: 1px solid #1e293b;
+            margin-top: 8px
+        }
+
+        .exp-panel .vs {
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 0;
+            margin: 4px 0;
+            border-top: 1px dashed #334155;
+            border-bottom: 1px dashed #334155
+        }
+
+        .how-toggle {
+            background: none;
+            border: none;
+            color: #475569;
+            font: 500 12px 'DM Sans', sans-serif;
+            cursor: pointer;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .how-toggle:hover {
+            color: #94a3b8
+        }
+
+        .how-toggle .arr {
+            font-size: 8px;
+            transition: transform .2s
+        }
+
+        .how-toggle.open .arr {
+            transform: rotate(90deg)
+        }
+
+        .how-panel {
+            display: none;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-top: 4px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.6
+        }
+
+        .how-panel.open {
+            display: block
+        }
+
+        .how-panel b {
+            color: #94a3b8
+        }
+
+        .share-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 8px;
+            margin-bottom: 16px
+        }
+
+        .share-btn {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            color: #94a3b8;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font: 500 12px 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .share-btn:hover {
+            border-color: #6366f1;
+            color: #e2e8f0
+        }
+
+        .share-msg {
+            font-size: 12px;
+            color: #34d399;
+            opacity: 0;
+            transition: opacity .3s
+        }
+
+        .footer {
+            color: #475569;
+            font-size: 10px;
+            text-align: center;
+            line-height: 1.5;
+            padding-top: 8px;
+            border-top: 1px solid #1e293b
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h1>Should You Get Married?</h1>
+        <p class="sub">See how marriage changes your federal + state tax bill</p>
+        <div class="yr-row"><button class="yr-btn on" id="yr2025">2025</button><button class="yr-btn"
+                id="yr2026">2026</button></div>
+        <div class="inputs">
+            <div class="inp"><span class="lbl">Your income</span><span class="val" id="incAL"
+                    style="color:#fb923c">$200,000</span><input type="range" id="incA" min="0" max="800000" step="5000"
+                    value="200000" /></div>
+            <div class="inp"><span class="lbl">Partner's income</span><span class="val" id="incBL"
+                    style="color:#818cf8">$200,000</span><input type="range" id="incB" min="0" max="800000" step="5000"
+                    value="200000" /></div>
+        </div>
+        <div class="row2">
+            <div class="inp"><span class="lbl">State</span><select id="state"></select></div>
+            <div class="inp"><span class="lbl">Kids</span><span class="val" id="kidsL"
+                    style="color:#fbbf24">0</span><input type="range" id="kids" min="0" max="5" step="1" value="0"
+                    style="width:80px;accent-color:#fbbf24" /></div>
+            <div class="inp"><span class="lbl">Homeowner?</span>
+                <div class="seg-ctrl" id="homeCtrl"><button class="seg-btn on" data-v="0">Neither</button><button
+                        class="seg-btn" data-v="1">One of us</button><button class="seg-btn" data-v="2">Both</button>
+                </div>
+            </div>
+        </div>
+        <div class="fine-tune">
+            <div class="ft-item"><label><input type="checkbox" id="chkMed" checked /> Medicare surtax</label></div>
+            <div class="ft-item"><label><input type="checkbox" id="chkNIIT" /> NIIT (investment inc.)</label></div>
+        </div>
+        <button class="assume-toggle" id="assumeToggle"><span class="arr">&#9654;</span> Adjust assumptions</button>
+        <div class="assume-panel" id="assumePanel">
+            <div class="assume-section-label">You vs Partner</div>
+            <div class="assume-grid">
+                <div class="inp" id="af401A_w"><span class="lbl">Your 401(k)</span><span class="val"
+                        id="af401A_v">$0</span><input type="range" id="af401A" min="0" max="24000" step="500"
+                        value="0" />
+                    <div class="af-bench" id="af401A_b"></div><span class="af-why" id="af401A_why"></span>
+                </div>
+                <div class="inp" id="af401B_w"><span class="lbl">Partner's 401(k)</span><span class="val"
+                        id="af401B_v">$0</span><input type="range" id="af401B" min="0" max="24000" step="500"
+                        value="0" />
+                    <div class="af-bench" id="af401B_b"></div><span class="af-why" id="af401B_why"></span>
+                </div>
+                <div class="inp" id="afCharA_w"><span class="lbl">Your charitable giving</span><span class="val"
+                        id="afCharA_v">$0</span><input type="range" id="afCharA" min="0" max="30000" step="500"
+                        value="0" />
+                    <div class="af-bench" id="afCharA_b"></div><span class="af-why" id="afCharA_why"></span>
+                </div>
+                <div class="inp" id="afCharB_w"><span class="lbl">Partner's charitable</span><span class="val"
+                        id="afCharB_v">$0</span><input type="range" id="afCharB" min="0" max="30000" step="500"
+                        value="0" />
+                    <div class="af-bench" id="afCharB_b"></div><span class="af-why" id="afCharB_why"></span>
+                </div>
+            </div>
+            <div class="assume-section-label">Housing &amp; deductions</div>
+            <div class="assume-grid">
+                <div class="inp" id="afProp_w" style="grid-column:1/-1"><span class="lbl">Property tax /
+                        home</span><span class="val" id="afProp_v">$0</span><input type="range" id="afProp" min="0"
+                        max="25000" step="500" value="0" />
+                    <div class="af-bench" id="afProp_b"></div><span class="af-why" id="afProp_why"></span>
+                </div>
+                <div class="inp" id="afMort_w" style="grid-column:1/-1"><span class="lbl">Mortgage interest /
+                        home</span><span class="val" id="afMort_v">$0</span><input type="range" id="afMort" min="0"
+                        max="36000" step="500" value="0" />
+                    <div class="af-bench" id="afMort_b"></div><span class="af-why" id="afMort_why"></span>
+                </div>
+                <div class="inp" id="afMrgHome_w" style="grid-column:1/-1"><span class="lbl">If married, keep both
+                        homes?</span>
+                    <div class="seg-ctrl seg-sm" id="mrgHomeCtrl"><button class="seg-btn on" data-v="1">Sell
+                            one</button><button class="seg-btn" data-v="2">Keep both</button></div><span class="af-why"
+                        id="afMrgHome_why"></span>
+                </div>
+            </div>
+            <button class="assume-reset" id="assumeReset">&#8634; Reset to defaults</button>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="breakdown" id="breakdown"></div>
+        <div id="notes"></div>
+        <button class="exp-toggle" id="mathToggle"><span class="arr">&#9654;</span> Show the math</button>
+        <div class="exp-panel" id="mathPanel"></div>
+        <div class="chart-wrap"><canvas id="chart"></canvas></div>
+        <div class="chart-legend">
+            <span><span class="sw" style="background:#818cf8"></span>Full estimate</span>
+            <span><span class="sw" style="background:#475569;border-style:dashed"></span>Brackets only</span>
+            <span style="color:#34d399">&#9632; Marriage saves</span>
+            <span style="color:#f87171">&#9632; Marriage costs</span>
+            <span><span class="sw" style="background:#fb923c"></span>Partner's income</span>
+        </div>
+        <button class="how-toggle" id="howToggle"><span class="arr">&#9654;</span> How we estimated this</button>
+        <div class="how-panel" id="howPanel"></div>
+        <div class="share-row"><button class="share-btn" id="shareBtn">&#128279; Copy shareable link</button><span
+                class="share-msg" id="shareMsg">Copied!</span></div>
+        <p class="footer">Simplified federal + state estimate · Assumes W-2 wage income · Does not include AMT, EITC,
+            NYC/Yonkers local tax · Not tax advice</p>
+    </div>
+    <script>
+        (function () {
+            var FED = {
+                2025: {
+                    single: [[0, 11925, .10], [11925, 48475, .12], [48475, 103350, .22], [103350, 197300, .24], [197300, 250525, .32], [250525, 626350, .35], [626350, Infinity, .37]],
+                    hoh: [[0, 17000, .10], [17000, 64850, .12], [64850, 103350, .22], [103350, 197300, .24], [197300, 250500, .32], [250500, 626350, .35], [626350, Infinity, .37]],
+                    mfj: [[0, 23850, .10], [23850, 96950, .12], [96950, 206700, .22], [206700, 394600, .24], [394600, 501050, .32], [501050, 751600, .35], [751600, Infinity, .37]],
+                    stdS: 15750, stdH: 23625, stdM: 31500, saltCap: 40000, saltPhase: 500000, saltFloor: 10000, ctcPer: 2200, ctcPhS: 200000, ctcPhM: 400000, k401: 23500
+                },
+                2026: {
+                    single: [[0, 12400, .10], [12400, 50400, .12], [50400, 105700, .22], [105700, 201775, .24], [201775, 256225, .32], [256225, 640600, .35], [640600, Infinity, .37]],
+                    hoh: [[0, 17700, .10], [17700, 67450, .12], [67450, 105700, .22], [105700, 201775, .24], [201775, 256225, .32], [256225, 640600, .35], [640600, Infinity, .37]],
+                    mfj: [[0, 24800, .10], [24800, 100800, .12], [100800, 211400, .22], [211400, 403550, .24], [403550, 512450, .32], [512450, 768700, .35], [768700, Infinity, .37]],
+                    stdS: 16100, stdH: 24150, stdM: 32200, saltCap: 40400, saltPhase: 505000, saltFloor: 10000, ctcPer: 2200, ctcPhS: 200000, ctcPhM: 400000, k401: 24000
+                }
+            };
+            var S = {
+                AL: { n: 'Alabama', type: 'grad_ok', topRate: .05, estProp: 4e3, stdS: 3e3, stdM: 8500 },
+                AK: { n: 'Alaska', type: 'none', topRate: 0, estProp: 4e3 },
+                AZ: { n: 'Arizona', type: 'flat', topRate: .025, estProp: 4e3 },
+                AR: { n: 'Arkansas', type: 'grad_ok', topRate: .039, estProp: 3e3 },
+                CA: {
+                    n: 'California', type: 'grad_ok', topRate: .133, estProp: 7e3, stdS: 5706, stdM: 11412,
+                    single: [[0, 11079, .01], [11079, 26264, .02], [26264, 41452, .04], [41452, 57542, .06], [57542, 72724, .08], [72724, 371479, .093], [371479, 445771, .103], [445771, 742953, .113], [742953, 1e6, .123], [1e6, Infinity, .133]],
+                    mfj: [[0, 22158, .01], [22158, 52528, .02], [52528, 82904, .04], [82904, 115084, .06], [115084, 145448, .08], [145448, 742958, .093], [742958, 891542, .103], [891542, 1485906, .113], [1485906, Infinity, .123]]
+                },
+                CO: { n: 'Colorado', type: 'flat', topRate: .044, estProp: 4e3 },
+                CT: { n: 'Connecticut', type: 'grad_ok', topRate: .0699, estProp: 7e3 },
+                DE: { n: 'Delaware', type: 'grad_ok', topRate: .066, estProp: 3e3 },
+                FL: { n: 'Florida', type: 'none', topRate: 0, estProp: 5e3 },
+                GA: { n: 'Georgia', type: 'flat', topRate: .0539, estProp: 4e3 },
+                HI: { n: 'Hawaii', type: 'grad_ok', topRate: .11, estProp: 4e3 },
+                ID: { n: 'Idaho', type: 'flat', topRate: .05695, estProp: 3e3 },
+                IL: { n: 'Illinois', type: 'flat', topRate: .0495, estProp: 6e3 },
+                IN: { n: 'Indiana', type: 'flat', topRate: .03, estProp: 3e3 },
+                IA: { n: 'Iowa', type: 'flat', topRate: .038, estProp: 4e3 },
+                KS: { n: 'Kansas', type: 'grad_ok', topRate: .0558, estProp: 4e3 },
+                KY: { n: 'Kentucky', type: 'flat', topRate: .04, estProp: 3e3 },
+                LA: { n: 'Louisiana', type: 'grad_ok', topRate: .045, estProp: 3e3 },
+                ME: { n: 'Maine', type: 'grad_ok', topRate: .0715, estProp: 5e3 },
+                MD: {
+                    n: 'Maryland', type: 'penalty', topRate: .0575, estProp: 6e3, stdS: 2550, stdM: 5100,
+                    single: [[0, 1e3, .02], [1e3, 2e3, .03], [2e3, 3e3, .04], [3e3, 1e5, .0475], [1e5, 125e3, .05], [125e3, 15e4, .0525], [15e4, 25e4, .055], [25e4, Infinity, .0575]],
+                    mfj: [[0, 1e3, .02], [1e3, 2e3, .03], [2e3, 3e3, .04], [3e3, 15e4, .0475], [15e4, 175e3, .05], [175e3, 225e3, .0525], [225e3, 3e5, .055], [3e5, Infinity, .0575]]
+                },
+                MA: { n: 'Massachusetts', type: 'flat', topRate: .09, estProp: 7e3 },
+                MI: { n: 'Michigan', type: 'flat', topRate: .0425, estProp: 4e3 },
+                MN: {
+                    n: 'Minnesota', type: 'penalty', topRate: .0985, estProp: 5e3, stdS: 14950, stdM: 29900,
+                    single: [[0, 32570, .0535], [32570, 106990, .068], [106990, 198630, .0785], [198630, Infinity, .0985]],
+                    mfj: [[0, 47620, .0535], [47620, 189180, .068], [189180, 330410, .0785], [330410, Infinity, .0985]]
+                },
+                MS: { n: 'Mississippi', type: 'flat', topRate: .047, estProp: 2e3 },
+                MO: { n: 'Missouri', type: 'grad_ok', topRate: .048, estProp: 3e3 },
+                MT: { n: 'Montana', type: 'grad_ok', topRate: .059, estProp: 4e3 },
+                NE: { n: 'Nebraska', type: 'grad_ok', topRate: .0584, estProp: 5e3 },
+                NV: { n: 'Nevada', type: 'none', topRate: 0, estProp: 4e3 },
+                NH: { n: 'New Hampshire', type: 'none', topRate: 0, estProp: 7e3 },
+                NJ: {
+                    n: 'New Jersey', type: 'penalty', topRate: .1075, estProp: 1e4, stdS: 0, stdM: 0,
+                    single: [[0, 2e4, .014], [2e4, 35e3, .0175], [35e3, 4e4, .035], [4e4, 75e3, .05525], [75e3, 5e5, .0637], [5e5, 1e6, .0897], [1e6, Infinity, .1075]],
+                    mfj: [[0, 2e4, .014], [2e4, 5e4, .0175], [5e4, 7e4, .0245], [7e4, 8e4, .035], [8e4, 15e4, .05525], [15e4, 5e5, .0637], [5e5, 1e6, .0897], [1e6, Infinity, .1075]]
+                },
+                NM: {
+                    n: 'New Mexico', type: 'penalty', topRate: .059, estProp: 3e3, stdS: 14600, stdM: 29200,
+                    single: [[0, 5500, .017], [5500, 11e3, .032], [11e3, 16e3, .047], [16e3, 21e4, .049], [21e4, Infinity, .059]],
+                    mfj: [[0, 8e3, .017], [8e3, 16e3, .032], [16e3, 24e3, .047], [24e3, 315e3, .049], [315e3, Infinity, .059]]
+                },
+                NY: {
+                    n: 'New York', type: 'penalty', topRate: .109, estProp: 8e3, stdS: 8e3, stdM: 16050,
+                    single: [[0, 8500, .04], [8500, 11700, .045], [11700, 13900, .0525], [13900, 80650, .055], [80650, 215400, .06], [215400, 1077550, .0685], [1077550, 5e6, .0965], [5e6, 25e6, .103], [25e6, Infinity, .109]],
+                    mfj: [[0, 17150, .04], [17150, 23600, .045], [23600, 27900, .0525], [27900, 161550, .055], [161550, 323200, .06], [323200, 2155350, .0685], [2155350, 5e6, .0965], [5e6, 25e6, .103], [25e6, Infinity, .109]]
+                },
+                NC: { n: 'North Carolina', type: 'flat', topRate: .045, estProp: 3e3 },
+                ND: { n: 'North Dakota', type: 'flat', topRate: .025, estProp: 3e3 },
+                OH: {
+                    n: 'Ohio', type: 'penalty', topRate: .035, estProp: 4e3, stdS: 0, stdM: 0,
+                    single: [[0, 26050, 0], [26050, 100e3, .02765], [100e3, Infinity, .035]],
+                    mfj: [[0, 26050, 0], [26050, 100e3, .02765], [100e3, Infinity, .035]]
+                },
+                OK: {
+                    n: 'Oklahoma', type: 'penalty', topRate: .0475, estProp: 3e3, stdS: 6350, stdM: 12700,
+                    single: [[0, 1e3, .0025], [1e3, 2500, .0075], [2500, 3750, .0175], [3750, 4900, .0275], [4900, 7200, .0375], [7200, Infinity, .0475]],
+                    mfj: [[0, 2e3, .0025], [2e3, 5e3, .0075], [5e3, 7500, .0175], [7500, 9800, .0275], [9800, 12200, .0375], [12200, Infinity, .0475]]
+                },
+                OR: { n: 'Oregon', type: 'grad_ok', topRate: .099, estProp: 5e3 },
+                PA: { n: 'Pennsylvania', type: 'flat', topRate: .0307, estProp: 5e3 },
+                RI: {
+                    n: 'Rhode Island', type: 'penalty', topRate: .0599, estProp: 6e3, stdS: 10550, stdM: 21100,
+                    single: [[0, 77450, .0375], [77450, 176050, .0475], [176050, Infinity, .0599]],
+                    mfj: [[0, 77450, .0375], [77450, 176050, .0475], [176050, Infinity, .0599]]
+                },
+                SC: {
+                    n: 'South Carolina', type: 'penalty', topRate: .064, estProp: 3e3, stdS: 14600, stdM: 29200,
+                    single: [[0, 3460, 0], [3460, 17330, .03], [17330, Infinity, .064]],
+                    mfj: [[0, 3460, 0], [3460, 17330, .03], [17330, Infinity, .064]]
+                },
+                SD: { n: 'South Dakota', type: 'none', topRate: 0, estProp: 4e3 },
+                TN: { n: 'Tennessee', type: 'none', topRate: 0, estProp: 3e3 },
+                TX: { n: 'Texas', type: 'none', topRate: 0, estProp: 6e3 },
+                UT: { n: 'Utah', type: 'flat', topRate: .0465, estProp: 4e3 },
+                VT: {
+                    n: 'Vermont', type: 'penalty', topRate: .0875, estProp: 6e3, stdS: 7300, stdM: 14600,
+                    single: [[0, 45400, .0335], [45400, 110450, .066], [110450, 229550, .076], [229550, Infinity, .0875]],
+                    mfj: [[0, 75850, .0335], [75850, 184400, .066], [184400, 229550, .076], [229550, Infinity, .0875]]
+                },
+                VA: {
+                    n: 'Virginia', type: 'penalty', topRate: .0575, estProp: 4e3, stdS: 8e3, stdM: 16e3,
+                    single: [[0, 3e3, .02], [3e3, 5e3, .03], [5e3, 17e3, .05], [17e3, Infinity, .0575]],
+                    mfj: [[0, 3e3, .02], [3e3, 5e3, .03], [5e3, 17e3, .05], [17e3, Infinity, .0575]]
+                },
+                WA: { n: 'Washington', type: 'none', topRate: 0, estProp: 5e3 },
+                WV: { n: 'West Virginia', type: 'grad_ok', topRate: .0512, estProp: 2e3 },
+                WI: {
+                    n: 'Wisconsin', type: 'penalty', topRate: .0765, estProp: 5e3, stdS: 13230, stdM: 24430,
+                    single: [[0, 14320, .035], [14320, 28640, .044], [28640, 315310, .053], [315310, Infinity, .0765]],
+                    mfj: [[0, 19090, .035], [19090, 38190, .044], [38190, 420420, .053], [420420, Infinity, .0765]]
+                },
+                WY: { n: 'Wyoming', type: 'none', topRate: 0, estProp: 3e3 },
+                DC: { n: 'Washington DC', type: 'grad_ok', topRate: .1075, estProp: 5e3 }
+            };
+            var curYear = 2025;
+            function taxBr(inc, br) { var t = 0; for (var i = 0; i < br.length; i++) { if (inc <= br[i][0]) break; t += (Math.min(inc, br[i][1]) - br[i][0]) * br[i][2]; } return t; }
+            function margRate(inc, br) { for (var i = br.length - 1; i >= 0; i--)if (inc > br[i][0]) return br[i][2]; return br[0][2]; }
+            function ctc(n, agi, thr, per) { if (!n) return 0; return Math.max(0, n * per - Math.floor(Math.max(0, agi - thr) / 1e3) * 50); }
+            function saltCapAt(magi, Y) { if (magi <= Y.saltPhase) return Y.saltCap; return Math.max(Y.saltFloor, Y.saltCap - .3 * (magi - Y.saltPhase)); }
+            function fmt(v) { var a = Math.abs(v); return a >= 1e3 ? '$' + (a / 1e3).toFixed(a >= 1e4 ? 0 : 1) + 'K' : '$' + a; }
+            function fmtD(v) { return '$' + Math.round(Math.abs(v)).toLocaleString(); }
+            function assumed401k(inc, Y) { return inc >= 1e5 ? Y.k401 : inc >= 6e4 ? Math.round(Y.k401 / 2) : 0; }
+
+            function stateEffTax(inc, st, isSingle) {
+                if (st.type === 'none') return 0;
+                if (st.type === 'flat') return Math.max(0, inc) * st.topRate;
+                var br = isSingle ? (st.single || null) : (st.mfj || null);
+                if (br) return taxBr(Math.max(0, inc), br);
+                return Math.max(0, inc) * st.topRate;
+            }
+
+            var dirty = {};
+            var AF_IDS = ['af401A', 'af401B', 'afProp', 'afMort', 'afCharA', 'afCharB'];
+            function fmtS(v) { return v >= 1e3 ? '$' + (v / 1e3).toFixed(v >= 1e4 || v % 1e3 === 0 ? 0 : 1) + 'K' : '$' + v; }
+            function getDefaults(incA, incB, stCode) {
+                var Y = FED[curYear], st = S[stCode] || S.TX;
+                return { af401A: assumed401k(incA, Y), af401B: assumed401k(incB, Y), afProp: st.estProp || 5e3, afMort: 12e3, afCharA: Math.round(Math.max(0, (incA - 1e5) * .02)), afCharB: Math.round(Math.max(0, (incB - 1e5) * .02)) };
+            }
+            function getBenchmarks(incA, incB, stCode) {
+                var Y = FED[curYear], st = S[stCode] || S.TX, prop = st.estProp || 5e3;
+                return {
+                    af401A: { low: 0, avg: assumed401k(incA, Y), high: Y.k401, max: Y.k401 },
+                    af401B: { low: 0, avg: assumed401k(incB, Y), high: Y.k401, max: Y.k401 },
+                    afProp: { low: Math.round(prop * .4), avg: prop, high: Math.round(prop * 2), max: Math.round(prop * 3) },
+                    afMort: { low: 4e3, avg: 12e3, high: 24e3, max: 36e3 },
+                    afCharA: { low: 0, avg: Math.round(Math.max(0, (incA - 1e5) * .02)), high: Math.round(Math.max(0, incA * .05)), max: Math.max(5e3, Math.round(incA * .08)) },
+                    afCharB: { low: 0, avg: Math.round(Math.max(0, (incB - 1e5) * .02)), high: Math.round(Math.max(0, incB * .05)), max: Math.max(5e3, Math.round(incB * .08)) }
+                };
+            }
+            function renderBench(b, id) {
+                var el = document.getElementById(id + '_b');
+                // If all three are same or zero
+                if (b.low === b.avg && b.avg === b.high) { el.innerHTML = '<span></span><span class="avg" style="text-align:center;width:100%">' + fmtS(b.avg) + (b.avg === 0 ? ' · nothing to deduct' : ' · only option') + '</span><span></span>'; return; }
+                // If avg equals high (maxed out)
+                if (b.avg === b.high) { el.innerHTML = '<span>Low · ' + fmtS(b.low) + '</span><span></span><span class="avg">' + fmtS(b.avg) + ' · maxed ✓</span>'; return; }
+                // If low equals avg (floor)
+                if (b.low === b.avg) { el.innerHTML = '<span class="avg">' + fmtS(b.avg) + ' · typical</span><span></span><span>High · ' + fmtS(b.high) + '</span>'; return; }
+                // Normal three-point
+                el.innerHTML = '<span>Low · ' + fmtS(b.low) + '</span><span class="avg">Avg · ' + fmtS(b.avg) + '</span><span>High · ' + fmtS(b.high) + '</span>';
+            }
+            function populateDefaults(incA, incB, stCode) {
+                var d = getDefaults(incA, incB, stCode), bm = getBenchmarks(incA, incB, stCode);
+                AF_IDS.forEach(function (id) {
+                    var el = document.getElementById(id), b = bm[id];
+                    el.max = b.max; el.step = b.max <= 5e3 ? 100 : 500;
+                    if (!dirty[id]) { el.value = d[id]; el.classList.remove('dirty'); document.getElementById(id + '_v').classList.remove('dirty'); }
+                    document.getElementById(id + '_v').textContent = '$' + (+el.value).toLocaleString();
+                    renderBench(b, id);
+                });
+            }
+            function getAssumptions() {
+                return { k401A: +document.getElementById('af401A').value || 0, k401B: +document.getElementById('af401B').value || 0, prop: +document.getElementById('afProp').value || 0, mort: +document.getElementById('afMort').value || 0, charA: +document.getElementById('afCharA').value || 0, charB: +document.getElementById('afCharB').value || 0 };
+            }
+
+            function calcActualStateTax(inc, st, isSingle) {
+                // Compute actual state income tax (for SALT purposes)
+                if (st.type === 'none') return 0;
+                return stateEffTax(Math.max(0, inc - (isSingle ? (st.stdS || 0) : (st.stdM || 0))), st, isSingle);
+            }
+
+            function calcComponents(incA, incB, kids, stCode, homeowner, med, niit, assum, mrgHome) {
+                var Y = FED[curYear], st = S[stCode] || S.TX, hasKids = kids > 0;
+                var homesMarried = homeowner < 2 ? homeowner : (mrgHome || homeowner);
+                var k401A = assum ? assum.k401A : assumed401k(incA, Y), k401B = assum ? assum.k401B : assumed401k(incB, Y);
+                var wageA = Math.max(0, incA - k401A), wageB = Math.max(0, incB - k401B);
+
+                // Bug fix #2: Assign HoH to whichever person gives lower combined singles tax
+                // Compute both scenarios if kids>0
+                var hohOnA = true;
+                if (hasKids) {
+                    var taxA_hoh = taxBr(Math.max(0, wageA - Y.stdH), Y.hoh) + taxBr(Math.max(0, wageB - Y.stdS), Y.single)
+                        - ctc(kids, incA, Y.ctcPhS, Y.ctcPer);
+                    var taxB_hoh = taxBr(Math.max(0, wageA - Y.stdS), Y.single) + taxBr(Math.max(0, wageB - Y.stdH), Y.hoh)
+                        - ctc(kids, incB, Y.ctcPhS, Y.ctcPer);
+                    hohOnA = taxA_hoh <= taxB_hoh;
+                }
+
+                // Set filing status based on HoH assignment
+                var hohInc = hohOnA ? incA : incB, hohWage = hohOnA ? wageA : wageB;
+                var sinInc = hohOnA ? incB : incA, sinWage = hohOnA ? wageB : wageA;
+                var hohStd = hasKids ? Y.stdH : Y.stdS, hohBr = hasKids ? Y.hoh : Y.single;
+                var sinStd = Y.stdS, sinBr = Y.single;
+
+                // Bug fix #1: Use actual graduated state tax for SALT, not income*topRate
+                var stTaxHoh = calcActualStateTax(hohInc, st, true);
+                var stTaxSin = calcActualStateTax(sinInc, st, true);
+                var stTaxM = calcActualStateTax(incA + incB, st, false);
+
+                // Itemized deductions
+                var prop = assum ? assum.prop : (st.estProp || 5e3), mort = assum ? assum.mort : 12e3;
+                var charHoh = assum ? (hohOnA ? assum.charA : assum.charB) : Math.max(0, (hohInc - 1e5) * .02);
+                var charSin = assum ? (hohOnA ? assum.charB : assum.charA) : Math.max(0, (sinInc - 1e5) * .02);
+                var propHoh = homeowner >= 1 ? prop : 0, propSin = homeowner >= 2 ? prop : 0;
+                var mortHoh = homeowner >= 1 ? mort : 0, mortSin = homeowner >= 2 ? mort : 0;
+                // Married scenario uses mrgHome for number of homes
+                var propM = homesMarried >= 1 ? prop : 0, propM2 = homesMarried >= 2 ? prop : 0;
+                var mortM = homesMarried >= 1 ? mort : 0, mortM2 = homesMarried >= 2 ? mort : 0;
+                var sCapHoh = saltCapAt(hohInc, Y), sCapSin = saltCapAt(sinInc, Y), sCapM = saltCapAt(incA + incB, Y);
+                var saltHoh = Math.min(stTaxHoh + propHoh, sCapHoh), saltSin = Math.min(stTaxSin + propSin, sCapSin);
+                var saltM = Math.min(stTaxM + propM + propM2, sCapM);
+                var itemHoh = saltHoh + mortHoh + charHoh, itemSin = saltSin + mortSin + charSin;
+                var itemMrg = saltM + mortM + mortM2 + charHoh + charSin;
+
+                // Effective deductions: max(standard, itemized)
+                var dedHoh = Math.max(hohStd, itemHoh), dedSin = Math.max(sinStd, itemSin), dedM = Math.max(Y.stdM, itemMrg);
+
+                // Full bracket calc with effective deductions
+                var hohTxFull = Math.max(0, hohWage - dedHoh), sinTxFull = Math.max(0, sinWage - dedSin);
+                var mTxFull = Math.max(0, wageA + wageB - dedM);
+                var sHoh = taxBr(hohTxFull, hohBr), sSin = taxBr(sinTxFull, sinBr), mFf = taxBr(mTxFull, Y.mfj);
+                var fullEffect = (sHoh + sSin) - mFf;
+
+                // Pure bracket calc with standard deductions only (for decomposition)
+                var hohTx = Math.max(0, hohWage - hohStd), sinTx = Math.max(0, sinWage - sinStd);
+                var mTx = Math.max(0, wageA + wageB - Y.stdM);
+                var sHohP = taxBr(hohTx, hohBr), sSinP = taxBr(sinTx, sinBr), mF = taxBr(mTx, Y.mfj);
+                var bracketEffect = (sHohP + sSinP) - mF;
+
+                // Itemization effect = full minus pure brackets
+                var saltEffect = fullEffect - bracketEffect;
+
+                var ctcEffect = 0;
+                if (hasKids) { ctcEffect = ctc(kids, incA + incB, Y.ctcPhM, Y.ctcPer) - ctc(kids, hohInc, Y.ctcPhS, Y.ctcPer); }
+                var stateEffect = 0;
+                if (st.single && st.mfj) {
+                    var ssHoh = stateEffTax(hohInc - (st.stdS || 0), st, true);
+                    var ssSin = stateEffTax(sinInc - (st.stdS || 0), st, true);
+                    var sm = stateEffTax(incA + incB - (st.stdM || 0), st, false);
+                    stateEffect = (ssHoh + ssSin) - sm;
+                }
+                var medEffect = 0;
+                if (med) { medEffect = (Math.max(0, incA - 2e5) + Math.max(0, incB - 2e5)) * .009 - Math.max(0, incA + incB - 25e4) * .009; }
+                var niitEffect = 0;
+                if (niit) {
+                    var invA = Math.max(0, (incA - 15e4) * .3), invB = Math.max(0, (incB - 15e4) * .3);
+                    niitEffect = (.038 * Math.min(invA, Math.max(0, incA - 2e5)) + .038 * Math.min(invB, Math.max(0, incB - 2e5)))
+                        - .038 * Math.min(invA + invB, Math.max(0, incA + incB - 25e4));
+                }
+                var net = fullEffect + ctcEffect + stateEffect + medEffect + niitEffect;
+
+                // Totals - Bug fix #3: include state tax for ALL non-none states
+                var singlesT = sHoh + sSin - (hasKids ? ctc(kids, hohInc, Y.ctcPhS, Y.ctcPer) : 0);
+                var marriedT = mFf - (hasKids ? ctc(kids, incA + incB, Y.ctcPhM, Y.ctcPer) : 0);
+                if (med) { singlesT += Math.max(0, incA - 2e5) * .009 + Math.max(0, incB - 2e5) * .009; marriedT += Math.max(0, incA + incB - 25e4) * .009; }
+                singlesT += stTaxHoh + stTaxSin;
+                marriedT += stTaxM;
+                var total = incA + incB;
+                return { brackets: Math.round(bracketEffect), ctc: Math.round(ctcEffect), salt: Math.round(saltEffect), state: Math.round(stateEffect), medicare: Math.round(medEffect), niit: Math.round(niitEffect), net: Math.round(net), singlesTotal: Math.round(singlesT), marriedTotal: Math.round(marriedT), effS: total > 0 ? (singlesT / total * 100) : 0, effM: total > 0 ? (marriedT / total * 100) : 0, hohOnA: hohOnA };
+            }
+
+            function calcBracketsOnly(incA, incB, kids, stCode) {
+                var Y = FED[curYear], st = S[stCode] || S.TX, hasKids = kids > 0;
+                var hohStd = hasKids ? Y.stdH : Y.stdS, hohBr = hasKids ? Y.hoh : Y.single;
+                // Optimal HoH assignment
+                var hohOnA = true;
+                if (hasKids) {
+                    var tA = taxBr(Math.max(0, incA - hohStd), hohBr) + taxBr(Math.max(0, incB - Y.stdS), Y.single);
+                    var tB = taxBr(Math.max(0, incA - Y.stdS), Y.single) + taxBr(Math.max(0, incB - hohStd), hohBr);
+                    hohOnA = tA <= tB;
+                }
+                var hohInc = hohOnA ? incA : incB, sinInc = hohOnA ? incB : incA;
+                var sTx = taxBr(Math.max(0, hohInc - hohStd), hohBr) + taxBr(Math.max(0, sinInc - Y.stdS), Y.single);
+                var mTx = Math.max(0, incA + incB - Y.stdM);
+                var fed = sTx - taxBr(mTx, Y.mfj);
+                var state = 0;
+                if (st.single && st.mfj) { state = (stateEffTax(incA - (st.stdS || 0), st, true) + stateEffTax(incB - (st.stdS || 0), st, true)) - stateEffTax(incA + incB - (st.stdM || 0), st, false); }
+                return fed + state;
+            }
+
+            // UI SETUP
+            var sel = document.getElementById('state');
+            var groups = { 'No Income Tax': ['AK', 'FL', 'NV', 'NH', 'SD', 'TN', 'TX', 'WA', 'WY'], 'Flat Rate': ['AZ', 'CO', 'GA', 'ID', 'IL', 'IN', 'IA', 'KY', 'MA', 'MI', 'MS', 'NC', 'ND', 'PA', 'UT'], 'Graduated (no penalty)': ['AL', 'AR', 'CT', 'DE', 'HI', 'KS', 'LA', 'ME', 'MO', 'MT', 'NE', 'OR', 'WV', 'DC'], 'Marriage Penalty States': ['CA', 'MD', 'MN', 'NJ', 'NM', 'NY', 'OH', 'OK', 'RI', 'SC', 'VT', 'VA', 'WI'] };
+            for (var g in groups) { var og = document.createElement('optgroup'); og.label = g; groups[g].forEach(function (c) { var o = document.createElement('option'); o.value = c; o.textContent = S[c].n + (S[c].type === 'penalty' ? ' \u26A0' : ''); if (c === 'NY') o.selected = true; og.appendChild(o); }); sel.appendChild(og); }
+
+            function setYear(y) { curYear = y; document.getElementById('yr2025').classList.toggle('on', y === 2025); document.getElementById('yr2026').classList.toggle('on', y === 2026); update(); }
+            document.getElementById('yr2025').onclick = function () { setYear(2025); };
+            document.getElementById('yr2026').onclick = function () { setYear(2026); };
+
+            // CHART
+            var markerX = 200000;
+            var markerPlugin = { id: 'marker', afterDatasetsDraw: function (ch) { var xS = ch.scales.x, yS = ch.scales.y, px = xS.getPixelForValue(markerX); if (px < xS.left || px > xS.right) return; var ctx = ch.ctx; ctx.save(); ctx.beginPath(); ctx.moveTo(px, yS.top); ctx.lineTo(px, yS.bottom); ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); var data = ch.data.datasets[0].data, val = null; for (var i = 0; i < data.length - 1; i++) { if (data[i].x <= markerX && data[i + 1].x >= markerX) { var t = (markerX - data[i].x) / (data[i + 1].x - data[i].x); val = data[i].y + t * (data[i + 1].y - data[i].y); break; } } if (val !== null) { var py = yS.getPixelForValue(val); ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fillStyle = '#fb923c'; ctx.fill(); ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fillStyle = '#0b0b1a'; ctx.fill(); } ctx.restore(); } };
+            var fillPlugin = { id: 'fill', beforeDatasetsDraw: function (ch) { var meta = ch.getDatasetMeta(0); if (!meta.data.length) return; var yS = ch.scales.y, z = yS.getPixelForValue(0), ctx = ch.ctx; ctx.save(); for (var i = 0; i < meta.data.length - 1; i++) { var p0 = meta.data[i], p1 = meta.data[i + 1]; ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p1.x, z); ctx.lineTo(p0.x, z); ctx.closePath(); ctx.fillStyle = (p0.y + p1.y) / 2 < z ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'; ctx.fill(); } ctx.restore(); } };
+            var chart = new Chart(document.getElementById('chart').getContext('2d'), { type: 'line', data: { datasets: [{ label: 'Net', data: [], borderColor: '#818cf8', borderWidth: 2.5, pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }, { label: 'Brackets only', data: [], borderColor: '#475569', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'linear', title: { display: true, text: "Partner's income", color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, stepSize: 1e5, callback: function (v) { return fmt(v); } }, grid: { color: '#1e293b' }, min: 0, max: 8e5 }, y: { type: 'linear', title: { display: true, text: 'Bonus (+) / Penalty (\u2212)', color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, callback: function (v) { return (v >= 0 ? '+' : '') + fmt(v); } }, grid: { color: '#1e293b' } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, titleColor: '#e2e8f0', bodyColor: '#cbd5e1', titleFont: { family: 'DM Sans', weight: '600' }, bodyFont: { family: 'DM Sans' }, padding: 12, callbacks: { title: function (i) { return 'You: ' + fmt(+document.getElementById('incA').value) + ' \xb7 Partner: ' + fmt(i[0].parsed.x); }, label: function (i) { var v = i.parsed.y; if (i.datasetIndex === 1) return 'Brackets only: ' + (v >= 0 ? '+' : '') + fmtD(v) + '/yr'; return (v >= 0 ? '\u2714 Saves ' : '\u2718 Costs ') + fmtD(v) + '/yr'; } } } } }, plugins: [fillPlugin, markerPlugin] });
+
+            var COMP = { brackets: { label: 'Federal brackets', color: '#818cf8' }, ctc: { label: 'Child tax credit', color: '#fbbf24' }, salt: { label: 'Itemization / SALT', color: '#f97316' }, state: { label: 'State brackets', color: '#f43f5e' }, medicare: { label: 'Medicare surtax', color: '#a78bfa' }, niit: { label: 'NIIT', color: '#67e8f9' } };
+
+            function getInputs() { var hv = 0; document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (b) { if (b.classList.contains('on')) hv = +b.dataset.v; }); var mh = 1; document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { if (b.classList.contains('on')) mh = +b.dataset.v; }); return { incA: +document.getElementById('incA').value, incB: +document.getElementById('incB').value, kids: +document.getElementById('kids').value, state: document.getElementById('state').value, home: hv, mrgHome: mh, med: document.getElementById('chkMed').checked, niit: document.getElementById('chkNIIT').checked }; }
+
+            function buildExplain(c, st) {
+                var parts = [];
+                if (c.brackets > 200) parts.push('federal brackets save you ' + fmtD(c.brackets));
+                else if (c.brackets < -200) parts.push('compressed federal brackets cost ' + fmtD(c.brackets));
+                if (c.ctc > 100) parts.push('the child tax credit helps by ' + fmtD(c.ctc));
+                else if (c.ctc < -100) parts.push('losing Head of Household status costs ' + fmtD(c.ctc));
+                if (c.salt > 200) parts.push('itemization differences save ' + fmtD(c.salt));
+                else if (c.salt < -200) parts.push('losing itemization deductions costs ' + fmtD(c.salt));
+                if (c.state < -100) parts.push(st.n + "'s brackets add " + fmtD(c.state) + ' in state penalty');
+                else if (c.state > 100) parts.push(st.n + "'s brackets save " + fmtD(c.state));
+                if (c.medicare < -100) parts.push('the Medicare surtax threshold costs ' + fmtD(c.medicare));
+                if (c.niit < -50) parts.push('NIIT costs ' + fmtD(c.niit));
+                if (!parts.length) return 'At these income levels, marriage has minimal tax impact.';
+                var s = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+                for (var i = 1; i < parts.length; i++)s += (i === parts.length - 1 ? ' and ' : ', ') + parts[i];
+                return s + '.';
+            }
+
+            function buildMath(p, assum, c) {
+                var Y = FED[curYear], st = S[p.state] || S.TX, hasKids = p.kids > 0;
+                var $ = function (v) { return '$' + Math.round(v).toLocaleString(); };
+                var k401A = assum.k401A, k401B = assum.k401B;
+                var wageA = Math.max(0, p.incA - k401A), wageB = Math.max(0, p.incB - k401B);
+
+                // HoH assignment mirrors calcComponents
+                var hohOnA = c.hohOnA;
+                var hohInc = hohOnA ? p.incA : p.incB, sinInc = hohOnA ? p.incB : p.incA;
+                var hohWage = hohOnA ? wageA : wageB, sinWage = hohOnA ? wageB : wageA;
+                var hohK = hohOnA ? k401A : k401B, sinK = hohOnA ? k401B : k401A;
+                var hohLabel = hasKids ? 'Head of Household' : 'Single', sinLabel = 'Single';
+                var hohStd = hasKids ? Y.stdH : Y.stdS, hohBr = hasKids ? Y.hoh : Y.single;
+
+                // Actual state tax for SALT (Bug fix #1)
+                var stTaxHoh = calcActualStateTax(hohInc, st, true);
+                var stTaxSin = calcActualStateTax(sinInc, st, true);
+                var stTaxM = calcActualStateTax(p.incA + p.incB, st, false);
+
+                // Itemized deductions
+                var propHoh = p.home >= 1 ? assum.prop : 0, propSin = p.home >= 2 ? assum.prop : 0;
+                var mortHoh = p.home >= 1 ? assum.mort : 0, mortSin = p.home >= 2 ? assum.mort : 0;
+                var homesMarried = p.home < 2 ? p.home : (p.mrgHome || p.home);
+                var propM1 = homesMarried >= 1 ? assum.prop : 0, propM2 = homesMarried >= 2 ? assum.prop : 0;
+                var mortM1 = homesMarried >= 1 ? assum.mort : 0, mortM2 = homesMarried >= 2 ? assum.mort : 0;
+                var charHoh = hohOnA ? assum.charA : assum.charB, charSin = hohOnA ? assum.charB : assum.charA;
+                var sCapHoh = saltCapAt(hohInc, Y), sCapSin = saltCapAt(sinInc, Y), sCapM = saltCapAt(p.incA + p.incB, Y);
+                var saltHoh = Math.min(stTaxHoh + propHoh, sCapHoh), saltSin = Math.min(stTaxSin + propSin, sCapSin);
+                var saltM = Math.min(stTaxM + propM1 + propM2, sCapM);
+                var itemHoh = saltHoh + mortHoh + charHoh, itemSin = saltSin + mortSin + charSin;
+                var itemMrg = saltM + mortM1 + mortM2 + charHoh + charSin;
+
+                var dedHoh = Math.max(hohStd, itemHoh), dedSin = Math.max(Y.stdS, itemSin), dedM = Math.max(Y.stdM, itemMrg);
+                var hohItemizes = itemHoh > hohStd, sinItemizes = itemSin > Y.stdS, mItemizes = itemMrg > Y.stdM;
+
+                var hohTx = Math.max(0, hohWage - dedHoh), sinTx = Math.max(0, sinWage - dedSin);
+                var sHoh = taxBr(hohTx, hohBr), sSin = taxBr(sinTx, Y.single);
+                var ctcHoh = hasKids ? ctc(p.kids, hohInc, Y.ctcPhS, Y.ctcPer) : 0;
+                var medHoh = p.med ? Math.max(0, hohInc - 2e5) * .009 : 0;
+                var medSin = p.med ? Math.max(0, sinInc - 2e5) * .009 : 0;
+                var fedHoh = sHoh - ctcHoh + medHoh, fedSin = sSin + medSin;
+
+                // Married
+                var mTx = Math.max(0, wageA + wageB - dedM);
+                var mF = taxBr(mTx, Y.mfj);
+                var ctcM = hasKids ? ctc(p.kids, p.incA + p.incB, Y.ctcPhM, Y.ctcPer) : 0;
+                var medM = p.med ? Math.max(0, p.incA + p.incB - 25e4) * .009 : 0;
+                var fedM = mF - ctcM + medM;
+
+                var singlesTotal = fedHoh + fedSin + stTaxHoh + stTaxSin;
+                var marriedTotal = fedM + stTaxM;
+                var net = singlesTotal - marriedTotal;
+
+                var hohColor = hohOnA ? '#fb923c' : '#818cf8', sinColor = hohOnA ? '#818cf8' : '#fb923c';
+                var hohWho = hohOnA ? 'You' : 'Partner', sinWho = hohOnA ? 'Partner' : 'You';
+
+                var h = '';
+                // SCENARIO A
+                h += '<div class="scenario">';
+                h += '<div class="scenario-title"><span class="pill" style="background:#fb923c">A</span> If you stay unmarried</div>';
+                if (hasKids && !hohOnA) h += '<div class="step"><span class="step-label" style="color:#fbbf24;font-style:italic">\u2139 Partner claims HoH because their higher income benefits more from the wider brackets</span></div>';
+                // HoH filer
+                h += '<div style="margin-bottom:12px"><b style="color:' + hohColor + '">' + hohWho + ' — filing as ' + hohLabel + '</b></div>';
+                h += '<div class="step"><span class="step-label">Gross income:</span> <span class="step-val">' + $(hohInc) + '</span></div>';
+                if (hohK > 0) h += '<div class="step"><span class="step-label">Pre-tax 401(k):</span> <span class="step-val">\u2212' + $(hohK) + '</span> <span class="step-label">\u2192 W-2 wages ' + $(hohWage) + '</span></div>';
+                if (hohItemizes) {
+                    h += '<div class="step"><span class="step-label">Itemized deductions:</span> <span class="step-val">\u2212' + $(itemHoh) + '</span> <span class="step-label">(SALT ' + $(saltHoh) + (mortHoh ? '+mort ' + $(mortHoh) : '') + (charHoh ? '+char ' + $(charHoh) : '') + ')</span></div>';
+                    h += '<div class="step"><span class="step-label" style="color:#475569">vs ' + hohLabel + ' std ded ' + $(hohStd) + ' \u2014 itemizing saves ' + $(itemHoh - hohStd) + '</span></div>';
+                } else {
+                    h += '<div class="step"><span class="step-label">' + hohLabel + ' std deduction:</span> <span class="step-val">\u2212' + $(hohStd) + '</span>';
+                    if (st.type !== 'none') h += ' <span class="step-label" style="color:#475569">(itemized would be ' + $(itemHoh) + ' \u2014 std ded wins)</span>';
+                    h += '</div>';
+                }
+                h += '<div class="step"><span class="step-label">Taxable income:</span> <span class="step-val"><b>' + $(hohTx) + '</b></span></div>';
+                h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(sHoh) + '</span></div>';
+                if (hasKids) h += '<div class="step"><span class="step-label">Child Tax Credit (' + p.kids + ' kid' + (p.kids > 1 ? 's' : '') + ', phaseout at ' + $(Y.ctcPhS) + '):</span> <span class="step-hl">\u2212' + $(ctcHoh) + '</span></div>';
+                if (medHoh > 0) h += '<div class="step"><span class="step-label">Medicare surtax (0.9% on wages above $200K):</span> <span class="step-neg">+' + $(medHoh) + '</span></div>';
+                if (stTaxHoh > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxHoh) + '</span></div>';
+                h += '<div class="subtotal">' + hohWho + ' total: ' + $(fedHoh + stTaxHoh) + '</div>';
+
+                // Single filer
+                h += '<div style="margin:16px 0 12px"><b style="color:' + sinColor + '">' + sinWho + ' — filing as Single</b></div>';
+                h += '<div class="step"><span class="step-label">Gross income:</span> <span class="step-val">' + $(sinInc) + '</span></div>';
+                if (sinK > 0) h += '<div class="step"><span class="step-label">Pre-tax 401(k):</span> <span class="step-val">\u2212' + $(sinK) + '</span> <span class="step-label">\u2192 W-2 wages ' + $(sinWage) + '</span></div>';
+                if (sinItemizes) {
+                    h += '<div class="step"><span class="step-label">Itemized deductions:</span> <span class="step-val">\u2212' + $(itemSin) + '</span> <span class="step-label">(SALT ' + $(saltSin) + (mortSin ? '+mort ' + $(mortSin) : '') + (charSin ? '+char ' + $(charSin) : '') + ')</span></div>';
+                    h += '<div class="step"><span class="step-label" style="color:#475569">vs Single std ded ' + $(Y.stdS) + ' \u2014 itemizing saves ' + $(itemSin - Y.stdS) + '</span></div>';
+                } else {
+                    h += '<div class="step"><span class="step-label">Single std deduction:</span> <span class="step-val">\u2212' + $(Y.stdS) + '</span>';
+                    if (st.type !== 'none') h += ' <span class="step-label" style="color:#475569">(itemized would be ' + $(itemSin) + ' \u2014 std ded wins)</span>';
+                    h += '</div>';
+                }
+                h += '<div class="step"><span class="step-label">Taxable income:</span> <span class="step-val"><b>' + $(sinTx) + '</b></span></div>';
+                h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(sSin) + '</span></div>';
+                if (medSin > 0) h += '<div class="step"><span class="step-label">Medicare surtax:</span> <span class="step-neg">+' + $(medSin) + '</span></div>';
+                if (stTaxSin > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxSin) + '</span></div>';
+                h += '<div class="subtotal">' + sinWho + ' total: ' + $(fedSin + stTaxSin) + '</div>';
+                h += '<div class="subtotal" style="font-size:13px;margin-top:12px;color:#fb923c">Combined as two singles: <b>' + $(singlesTotal) + '</b></div>';
+                h += '</div>';
+
+                // SCENARIO B
+                h += '<div class="scenario">';
+                h += '<div class="scenario-title"><span class="pill" style="background:#6366f1">B</span> If you get married</div>';
+                h += '<div style="margin-bottom:12px"><b style="color:#818cf8">Filing Married Filing Jointly</b></div>';
+                h += '<div class="step"><span class="step-label">Combined income:</span> <span class="step-val">' + $(p.incA + p.incB) + '</span></div>';
+                if (k401A + k401B > 0) h += '<div class="step"><span class="step-label">Pre-tax 401(k) (combined):</span> <span class="step-val">\u2212' + $(k401A + k401B) + '</span> <span class="step-label">\u2192 W-2 wages ' + $(wageA + wageB) + '</span></div>';
+                if (mItemizes) {
+                    h += '<div class="step"><span class="step-label">Itemized deductions:</span> <span class="step-val">\u2212' + $(itemMrg) + '</span> <span class="step-label">(SALT ' + $(saltM) + (mortM1 + mortM2 ? '+mort ' + $(mortM1 + mortM2) : '') + (charHoh + charSin ? '+char ' + $(charHoh + charSin) : '') + ')</span></div>';
+                    var totalSinglesDed = dedHoh + dedSin;
+                    h += '<div class="step"><span class="step-label" style="color:' + (itemMrg < totalSinglesDed ? '#f87171' : '#475569') + '">vs two singles\' deductions: ' + $(totalSinglesDed) + (itemMrg < totalSinglesDed ? ' \u2014 lost ' + $(totalSinglesDed - itemMrg) + ' in deductions' : ' \u2014 comparable') + '</span></div>';
+                } else {
+                    h += '<div class="step"><span class="step-label">MFJ std deduction:</span> <span class="step-val">\u2212' + $(Y.stdM) + '</span>';
+                    var totalSinglesDed = dedHoh + dedSin;
+                    if (totalSinglesDed > Y.stdM) h += ' <span class="step-label" style="color:#f87171">(two singles got ' + $(totalSinglesDed) + ' total \u2014 lost ' + $(totalSinglesDed - Y.stdM) + ' in deductions)</span>';
+                    else if (hasKids) h += ' <span class="step-label" style="color:#f87171">(vs ' + $(hohStd) + ' HoH + ' + $(Y.stdS) + ' Single = ' + $(hohStd + Y.stdS) + ' total)</span>';
+                    h += '</div>';
+                }
+                h += '<div class="step"><span class="step-label">Taxable income:</span> <span class="step-val"><b>' + $(mTx) + '</b></span></div>';
+                h += '<div class="step"><span class="step-label">Federal income tax:</span> <span class="step-val">' + $(mF) + '</span></div>';
+                if (hasKids) h += '<div class="step"><span class="step-label">Child Tax Credit (phaseout at ' + $(Y.ctcPhM) + ' for MFJ):</span> <span class="step-hl">\u2212' + $(ctcM) + '</span></div>';
+                if (medM > 0) h += '<div class="step"><span class="step-label">Medicare surtax (0.9% above $250K for MFJ):</span> <span class="step-neg">+' + $(medM) + '</span></div>';
+                if (stTaxM > 0) h += '<div class="step"><span class="step-label">' + st.n + ' state tax:</span> <span class="step-val">' + $(stTaxM) + '</span></div>';
+                h += '<div class="subtotal" style="font-size:13px;margin-top:12px;color:#818cf8">Married total: <b>' + $(marriedTotal) + '</b></div>';
+                h += '</div>';
+
+                // VERDICT
+                var isBonus = net >= 0;
+                h += '<div class="vs" style="color:' + (isBonus ? '#34d399' : '#f87171') + '">' + $(singlesTotal) + ' \u2212 ' + $(marriedTotal) + ' = ' + (isBonus ? '+' : '\u2212') + $(Math.abs(net)) + '/yr ' + (isBonus ? '\u2714 Marriage saves' : '\u2718 Marriage costs') + '</div>';
+
+                // Key insight
+                if (hasKids) {
+                    var dedLoss = (dedHoh + dedSin) - dedM;
+                    if (dedLoss > 0) {
+                        h += '<div style="margin-top:12px;padding:10px 14px;background:#1e1e2e;border-radius:6px;font-size:12px;line-height:1.6">';
+                        h += '<b style="color:#fbbf24">\u2728 Key insight:</b> When unmarried with kids, ' + hohWho.toLowerCase() + ' files as <b>Head of Household</b> — a special status with wider tax brackets';
+                        if (!hohItemizes) h += ' and a ' + $(hohStd) + ' standard deduction (vs ' + $(Y.stdS) + ' single)';
+                        h += '. Getting married means losing HoH and switching to MFJ. Combined deductions go from ' + $(dedHoh) + ' + ' + $(dedSin) + ' = <b>' + $(dedHoh + dedSin) + '</b> down to <b>' + $(dedM) + '</b> — that\'s <b style="color:#f87171">' + $(dedLoss) + ' less</b>.';
+                        h += '</div>';
+                    }
+                }
+                if (p.med && (medHoh + medSin - medM) !== 0) {
+                    var medDiff = medHoh + medSin - medM;
+                    if (Math.abs(medDiff) > 50) {
+                        h += '<div style="margin-top:8px;padding:10px 14px;background:#1e1e2e;border-radius:6px;font-size:12px;line-height:1.6">';
+                        h += '<b style="color:#a78bfa">\u2728 Medicare surtax:</b> The 0.9% Additional Medicare Tax kicks in at <b>$200K for singles</b> but only <b>$250K for married couples</b> — it\'s not doubled. ';
+                        if (medDiff > 0) h += 'As singles, you pay ' + $(medHoh + medSin) + ' total. Married, you pay ' + $(medM) + '. Two thresholds beat one here — <b style="color:#34d399">saves ' + $(medDiff) + '</b>.';
+                        else h += 'As singles, neither of you' + (medHoh + medSin > 0 ? ' pays much' : 'hits the threshold') + '. Married, your combined ' + $(p.incA + p.incB) + ' is ' + $(p.incA + p.incB - 25e4) + ' above the $250K threshold — <b style="color:#f87171">costs ' + $(Math.abs(medDiff)) + '</b>.';
+                        h += '</div>';
+                    }
+                }
+
+                return h;
+            }
+
+            function update() {
+                var p = getInputs(), Y = FED[curYear], st = S[p.state] || S.TX;
+                populateDefaults(p.incA, p.incB, p.state);
+                var assum = getAssumptions();
+                document.getElementById('incAL').textContent = '$' + p.incA.toLocaleString();
+                document.getElementById('incBL').textContent = '$' + p.incB.toLocaleString();
+                document.getElementById('kidsL').textContent = p.kids;
+                markerX = p.incB;
+                var c = calcComponents(p.incA, p.incB, p.kids, p.state, p.home, p.med, p.niit, assum, p.mrgHome);
+
+                // Detect which assumption sliders actually affect the marriage penalty/bonus
+                var inertReasons = { afProp: null, afMort: null, afCharA: null, afCharB: null, af401A: null, af401B: null };
+                var bm = getBenchmarks(p.incA, p.incB, p.state);
+                AF_IDS.forEach(function (id) {
+                    var lo = Object.assign({}, assum), hi = Object.assign({}, assum);
+                    var key = id === 'af401A' ? 'k401A' : id === 'af401B' ? 'k401B' : id === 'afProp' ? 'prop' : id === 'afMort' ? 'mort' : id === 'afCharA' ? 'charA' : 'charB';
+                    lo[key] = 0; hi[key] = bm[id].max;
+                    var nLo = calcComponents(p.incA, p.incB, p.kids, p.state, p.home, p.med, p.niit, lo, p.mrgHome).net;
+                    var nHi = calcComponents(p.incA, p.incB, p.kids, p.state, p.home, p.med, p.niit, hi, p.mrgHome).net;
+                    if (nLo === nHi) {
+                        if ((id === 'afProp' || id === 'afMort') && p.home === 0) inertReasons[id] = 'set homeowner above \u2191';
+                        else if (id === 'afProp' || id === 'afMort') inertReasons[id] = 'standard deduction beats itemizing';
+                        else if (id === 'afCharA' || id === 'afCharB') inertReasons[id] = st.type === 'none' ? 'no state tax \u2014 standard deduction wins' : 'standard deduction beats itemizing';
+                        else if (id === 'af401A' || id === 'af401B') inertReasons[id] = 'same bracket impact either way';
+                        else inertReasons[id] = 'no impact at these incomes';
+                    }
+                });
+                AF_IDS.forEach(function (id) {
+                    var w = document.getElementById(id + '_w'), why = document.getElementById(id + '_why');
+                    if (inertReasons[id]) { w.classList.add('inert'); why.textContent = inertReasons[id]; }
+                    else { w.classList.remove('inert'); why.textContent = ''; }
+                });
+                // mrgHome toggle: only active when both own homes
+                var mhW = document.getElementById('afMrgHome_w'), mhWhy = document.getElementById('afMrgHome_why');
+                if (p.home < 2) { mhW.classList.add('inert'); mhWhy.textContent = p.home === 0 ? 'no homes to consolidate' : 'only one home either way'; }
+                else { mhW.classList.remove('inert'); mhWhy.textContent = ''; }
+
+                var isBonus = c.net >= 0;
+                document.getElementById('result').innerHTML = '<div class="amount" style="color:' + (isBonus ? '#34d399' : '#f87171') + '">' + (isBonus ? '+' : '\u2212') + fmtD(c.net) + '<span style="font-size:20px;color:#64748b">/yr</span></div><div class="label" style="color:' + (isBonus ? '#34d399' : '#f87171') + '">' + (isBonus ? 'Marriage saves you money' : 'Marriage costs you money') + '</div><div class="rates"><span>Two singles: ' + fmtD(c.singlesTotal) + ' (' + c.effS.toFixed(1) + '%)</span><span>Married: ' + fmtD(c.marriedTotal) + ' (' + c.effM.toFixed(1) + '%)</span></div><div class="explain">' + buildExplain(c, st) + '</div>';
+
+                // Breakdown
+                var COMP_ORDER = ['brackets', 'ctc', 'salt', 'state', 'medicare', 'niit'];
+                var parts = [];
+                COMP_ORDER.forEach(function (k) { if (Math.abs(c[k]) > 50) parts.push({ key: k, val: c[k] }); });
+                var bEl = document.getElementById('breakdown');
+                if (parts.length > 0) {
+                    var maxAbs = 0; parts.forEach(function (p) { maxAbs = Math.max(maxAbs, Math.abs(p.val)); });
+                    var h = '<div class="bar-title">What\'s driving this</div>';
+                    parts.forEach(function (p) {
+                        var pct = Math.min(90, Math.abs(p.val) / (maxAbs || 1) * 70);
+                        var isSave = p.val >= 0;
+                        var bg = isSave ? '#34d399' : COMP[p.key].color;
+                        var valStr = (isSave ? '+' : '\u2212') + fmtD(p.val);
+                        var valColor = isSave ? '#34d399' : '#f87171';
+                        h += '<div class="drv-row">';
+                        h += '<span class="drv-label">' + COMP[p.key].label + '</span>';
+                        h += '<div class="drv-track"><div class="drv-bar" style="width:' + pct + '%;background:' + bg + ';opacity:' + (isSave ? .8 : .6) + '"></div></div>';
+                        h += '<span class="drv-val" style="color:' + valColor + '">' + valStr + '</span>';
+                        h += '</div>';
+                    });
+                    bEl.innerHTML = h;
+                } else bEl.innerHTML = '';
+
+                // Chart
+                var pts = [], bpts = []; for (var b = 0; b <= 8e5; b += 5e3) { pts.push({ x: b, y: calcComponents(p.incA, b, p.kids, p.state, p.home, p.med, p.niit, assum, p.mrgHome).net }); bpts.push({ x: b, y: calcBracketsOnly(p.incA, b, p.kids, p.state) }); }
+                chart.data.datasets[0].data = pts; chart.data.datasets[1].data = bpts; chart.update('none');
+
+                // Notes
+                var notes = [];
+                if (p.kids > 0) { var hohWho2 = c.hohOnA ? 'you' : 'your partner'; var hohInc2 = c.hohOnA ? p.incA : p.incB; var ctcS2 = ctc(p.kids, hohInc2, Y.ctcPhS, Y.ctcPer), ctcM2 = ctc(p.kids, p.incA + p.incB, Y.ctcPhM, Y.ctcPer); notes.push('<b>' + p.kids + ' kid' + (p.kids > 1 ? 's' : '') + ':</b> Unmarried, ' + hohWho2 + ' file' + (c.hohOnA ? '' : 's') + ' as <b>Head of Household</b> ($' + Y.stdH.toLocaleString() + ' std deduction vs $' + Y.stdS.toLocaleString() + ' single). CTC: $' + ctcS2.toLocaleString() + ' single vs $' + ctcM2.toLocaleString() + ' married.' + (c.hohOnA ? '' : ' <em>Partner gets HoH because the wider brackets save more at their income level.</em>')); }
+                if (Math.abs(c.salt) > 50) { notes.push('<b>Itemization:</b> ' + (c.salt < 0 ? 'Combining deductions under one married return loses ground vs two separate itemized/standard deductions as singles.' : 'Married filing jointly benefits from combined deductions exceeding the MFJ standard deduction more than your individual deductions do as singles.')); }
+                if (st.type === 'penalty' && Math.abs(c.state) > 50) { notes.push('<b>' + st.n + ':</b> This state doesn\'t double its tax brackets for married couples. ' + (c.state >= 0 ? 'With your income split, you still get a <b style="color:#34d399">$' + Math.abs(c.state).toLocaleString() + ' state bonus</b>.' : 'Dual incomes push you into higher state brackets, costing <b style="color:#f87171">$' + Math.abs(c.state).toLocaleString() + '</b> extra.')); }
+                document.getElementById('notes').innerHTML = notes.map(function (n) { return '<div class="note">' + n + '</div>'; }).join('');
+
+                // How panel
+                var homeLabel = p.home === 0 ? 'Neither owns' : p.home === 1 ? 'One owns' : 'Both own';
+                document.getElementById('howPanel').innerHTML = '<b>401(k):</b> $' + assum.k401A.toLocaleString() + ' + $' + assum.k401B.toLocaleString() + ' pre-tax contributions.<br>' + (p.home > 0 ? '<b>Property:</b> ' + homeLabel + '. $' + assum.prop.toLocaleString() + '/yr property tax, $' + assum.mort.toLocaleString() + '/yr mortgage interest per home.<br>' : '') + '<b>Charitable:</b> $' + assum.charA.toLocaleString() + ' + $' + assum.charB.toLocaleString() + '.<br><b>Deduction method:</b> Max of standard vs itemized (SALT + mortgage + charitable) per filing scenario.<br><b>SALT cap:</b> $' + Y.saltCap.toLocaleString() + '/return (OBBBA). Includes actual state income tax' + (p.home > 0 ? ' + property tax' : '') + '. Phases down above $' + Y.saltPhase.toLocaleString() + '.<br><b>State:</b> ' + (st.type === 'none' ? 'No income tax.' : st.type === 'flat' ? 'Flat ' + (st.topRate * 100).toFixed(1) + '%.' : st.type === 'penalty' ? 'Full bracket calc \u2014 brackets NOT doubled for MFJ.' : 'Brackets doubled for MFJ \u2014 no state penalty.') + '<br><b>Not included:</b> AMT, EITC, NYC/Yonkers local, education credits.';
+
+                // Math walkthrough
+                document.getElementById('mathPanel').innerHTML = buildMath(p, assum, c);
+            }
+
+            // Events
+            ['incA', 'incB', 'kids'].forEach(function (id) { document.getElementById(id).addEventListener('input', update); });
+            document.getElementById('state').addEventListener('change', update);
+            ['chkMed', 'chkNIIT'].forEach(function (id) { document.getElementById(id).addEventListener('change', update); });
+            document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (btn) { btn.addEventListener('click', function () { document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (b) { b.classList.remove('on'); }); this.classList.add('on'); update(); }); });
+            document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (btn) { btn.addEventListener('click', function () { document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { b.classList.remove('on'); }); this.classList.add('on'); update(); }); });
+            document.getElementById('howToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('howPanel').classList.toggle('open'); });
+            document.getElementById('mathToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('mathPanel').classList.toggle('open'); });
+            document.getElementById('assumeToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('assumePanel').classList.toggle('open'); });
+            AF_IDS.forEach(function (id) { document.getElementById(id).addEventListener('input', function () { dirty[id] = true; this.classList.add('dirty'); document.getElementById(id + '_v').textContent = '$' + (+this.value).toLocaleString(); document.getElementById(id + '_v').classList.add('dirty'); update(); }); });
+            document.getElementById('assumeReset').addEventListener('click', function () { dirty = {}; AF_IDS.forEach(function (id) { document.getElementById(id).classList.remove('dirty'); document.getElementById(id + '_v').classList.remove('dirty'); }); document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.v === '1'); }); update(); });
+
+            // Share
+            function buildHash() { var p = getInputs(); return '#a=' + p.incA + '&b=' + p.incB + '&st=' + p.state + '&k=' + p.kids + '&h=' + p.home + '&mh=' + p.mrgHome + '&m=' + (p.med ? 1 : 0) + '&ni=' + (p.niit ? 1 : 0) + '&yr=' + curYear; }
+            function loadHash() { var h = location.hash.slice(1); if (!h) return; var p = {}; h.split('&').forEach(function (s) { var kv = s.split('='); p[kv[0]] = kv[1]; }); if (p.a) document.getElementById('incA').value = p.a; if (p.b) document.getElementById('incB').value = p.b; if (p.st) document.getElementById('state').value = p.st; if (p.k) document.getElementById('kids').value = p.k; if (p.h !== undefined) { document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.v === p.h); }); } if (p.mh !== undefined) { document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.v === p.mh); }); } if (p.m !== undefined) document.getElementById('chkMed').checked = p.m === '1'; if (p.ni !== undefined) document.getElementById('chkNIIT').checked = p.ni === '1'; if (p.yr) setYear(+p.yr); }
+            document.getElementById('shareBtn').addEventListener('click', function () { var url = location.origin + location.pathname + buildHash(); try { navigator.clipboard.writeText(url).then(function () { document.getElementById('shareMsg').style.opacity = '1'; setTimeout(function () { document.getElementById('shareMsg').style.opacity = '0'; }, 2e3); }); } catch (e) { var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); document.getElementById('shareMsg').style.opacity = '1'; setTimeout(function () { document.getElementById('shareMsg').style.opacity = '0'; }, 2e3); } });
+            loadHash(); update();
+        })();
+    </script>
+</body>
+
+</html>
