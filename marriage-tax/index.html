@@ -745,37 +745,6 @@
             color: #94a3b8
         }
 
-        .share-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 8px;
-            margin-bottom: 16px
-        }
-
-        .share-btn {
-            background: #0f172a;
-            border: 1px solid #1e293b;
-            color: #94a3b8;
-            padding: 7px 14px;
-            border-radius: 8px;
-            font: 500 12px 'DM Sans', sans-serif;
-            cursor: pointer;
-            transition: all .15s
-        }
-
-        .share-btn:hover {
-            border-color: #6366f1;
-            color: #e2e8f0
-        }
-
-        .share-msg {
-            font-size: 12px;
-            color: #34d399;
-            opacity: 0;
-            transition: opacity .3s
-        }
-
         .footer {
             color: #475569;
             font-size: 10px;
@@ -877,8 +846,6 @@
         </div>
         <button class="how-toggle" id="howToggle"><span class="arr">&#9654;</span> How we estimated this</button>
         <div class="how-panel" id="howPanel"></div>
-        <div class="share-row"><button class="share-btn" id="shareBtn">&#128279; Copy shareable link</button><span
-                class="share-msg" id="shareMsg">Copied!</span></div>
         <p class="footer">Simplified federal + state estimate · Assumes W-2 wage income · Does not include AMT, EITC,
             NYC/Yonkers local tax · Not tax advice</p>
     </div>
@@ -1449,6 +1416,7 @@
 
                 // Math walkthrough
                 document.getElementById('mathPanel').innerHTML = buildMath(p, assum, c);
+                try { history.replaceState(null, '', buildHash()); } catch (e) { }
             }
 
             // Events
@@ -1466,7 +1434,6 @@
             // Share
             function buildHash() { var p = getInputs(); return '#a=' + p.incA + '&b=' + p.incB + '&st=' + p.state + '&k=' + p.kids + '&h=' + p.home + '&mh=' + p.mrgHome + '&m=' + (p.med ? 1 : 0) + '&ni=' + (p.niit ? 1 : 0) + '&yr=' + curYear; }
             function loadHash() { var h = location.hash.slice(1); if (!h) return; var p = {}; h.split('&').forEach(function (s) { var kv = s.split('='); p[kv[0]] = kv[1]; }); if (p.a) document.getElementById('incA').value = p.a; if (p.b) document.getElementById('incB').value = p.b; if (p.st) document.getElementById('state').value = p.st; if (p.k) document.getElementById('kids').value = p.k; if (p.h !== undefined) { document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.v === p.h); }); } if (p.mh !== undefined) { document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { b.classList.toggle('on', b.dataset.v === p.mh); }); } if (p.m !== undefined) document.getElementById('chkMed').checked = p.m === '1'; if (p.ni !== undefined) document.getElementById('chkNIIT').checked = p.ni === '1'; if (p.yr) setYear(+p.yr); }
-            document.getElementById('shareBtn').addEventListener('click', function () { var url = location.origin + location.pathname + buildHash(); try { navigator.clipboard.writeText(url).then(function () { document.getElementById('shareMsg').style.opacity = '1'; setTimeout(function () { document.getElementById('shareMsg').style.opacity = '0'; }, 2e3); }); } catch (e) { var t = document.createElement('textarea'); t.value = url; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); document.getElementById('shareMsg').style.opacity = '1'; setTimeout(function () { document.getElementById('shareMsg').style.opacity = '0'; }, 2e3); } });
             loadHash(); update();
         })();
     </script>
