@@ -564,6 +564,28 @@
             border-radius: 1px
         }
 
+        .chart-zoom-btn {
+            position: absolute;
+            z-index: 10;
+            background: rgba(15, 23, 42, .9);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 26px;
+            text-align: center;
+            padding: 0;
+            opacity: .5;
+            transition: all .15s
+        }
+
+        .chart-zoom-btn:hover {
+            opacity: 1;
+            border-color: #6366f1
+        }
+
         .note {
             background: #0f172a;
             border-left: 3px solid #334155;
@@ -836,7 +858,8 @@
         <div id="notes"></div>
         <button class="exp-toggle" id="mathToggle"><span class="arr">&#9654;</span> Show the math</button>
         <div class="exp-panel" id="mathPanel"></div>
-        <div class="chart-wrap"><canvas id="chart"></canvas></div>
+        <div class="chart-wrap"><button class="chart-zoom-btn" id="chartZoom"
+                title="Toggle zoom">&#128269;</button><canvas id="chart"></canvas></div>
         <div class="chart-legend">
             <span><span class="sw" style="background:#818cf8"></span>Full estimate</span>
             <span><span class="sw" style="background:#475569;border-style:dashed"></span>Brackets only</span>
@@ -1161,9 +1184,12 @@
 
             // CHART
             var markerX = 200000;
+            var chartZoomed = true;
             var markerPlugin = { id: 'marker', afterDatasetsDraw: function (ch) { var xS = ch.scales.x, yS = ch.scales.y, px = xS.getPixelForValue(markerX); if (px < xS.left || px > xS.right) return; var ctx = ch.ctx; ctx.save(); ctx.beginPath(); ctx.moveTo(px, yS.top); ctx.lineTo(px, yS.bottom); ctx.strokeStyle = '#fb923c'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); var data = ch.data.datasets[0].data, val = null; for (var i = 0; i < data.length - 1; i++) { if (data[i].x <= markerX && data[i + 1].x >= markerX) { var t = (markerX - data[i].x) / (data[i + 1].x - data[i].x); val = data[i].y + t * (data[i + 1].y - data[i].y); break; } } if (val !== null) { var py = yS.getPixelForValue(val); ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2); ctx.fillStyle = '#fb923c'; ctx.fill(); ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fillStyle = '#0b0b1a'; ctx.fill(); } ctx.restore(); } };
             var fillPlugin = { id: 'fill', beforeDatasetsDraw: function (ch) { var meta = ch.getDatasetMeta(0); if (!meta.data.length) return; var yS = ch.scales.y, z = yS.getPixelForValue(0), ctx = ch.ctx; ctx.save(); for (var i = 0; i < meta.data.length - 1; i++) { var p0 = meta.data[i], p1 = meta.data[i + 1]; ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p1.x, z); ctx.lineTo(p0.x, z); ctx.closePath(); ctx.fillStyle = (p0.y + p1.y) / 2 < z ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.15)'; ctx.fill(); } ctx.restore(); } };
-            var chart = new Chart(document.getElementById('chart').getContext('2d'), { type: 'line', data: { datasets: [{ label: 'Net', data: [], borderColor: '#818cf8', borderWidth: 2.5, pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }, { label: 'Brackets only', data: [], borderColor: '#475569', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'linear', title: { display: true, text: "Partner's income", color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, stepSize: 1e5, callback: function (v) { return fmt(v); } }, grid: { color: '#1e293b' }, min: 0, max: 8e5 }, y: { type: 'linear', title: { display: true, text: 'Bonus (+) / Penalty (\u2212)', color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, callback: function (v) { return (v >= 0 ? '+' : '') + fmt(v); } }, grid: { color: '#1e293b' } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, titleColor: '#e2e8f0', bodyColor: '#cbd5e1', titleFont: { family: 'DM Sans', weight: '600' }, bodyFont: { family: 'DM Sans' }, padding: 12, callbacks: { title: function (i) { return 'You: ' + fmt(+document.getElementById('incA').value) + ' \xb7 Partner: ' + fmt(i[0].parsed.x); }, label: function (i) { var v = i.parsed.y; if (i.datasetIndex === 1) return 'Brackets only: ' + (v >= 0 ? '+' : '') + fmtD(v) + '/yr'; return (v >= 0 ? '\u2714 Saves ' : '\u2718 Costs ') + fmtD(v) + '/yr'; } } } } }, plugins: [fillPlugin, markerPlugin] });
+            var zoomBtn = document.getElementById('chartZoom');
+            var posPlugin = { id: 'posZoom', afterDraw: function (ch) { var a = ch.chartArea; zoomBtn.style.top = (a.top + 6) + 'px'; zoomBtn.style.right = (ch.width - a.right + 6) + 'px'; } };
+            var chart = new Chart(document.getElementById('chart').getContext('2d'), { type: 'line', data: { datasets: [{ label: 'Net', data: [], borderColor: '#818cf8', borderWidth: 2.5, pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }, { label: 'Brackets only', data: [], borderColor: '#475569', borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0, pointHitRadius: 10, fill: false, tension: .3 }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'linear', title: { display: true, text: "Partner's income", color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, callback: function (v) { return fmt(v); } }, grid: { color: '#1e293b' } }, y: { type: 'linear', title: { display: true, text: 'Bonus (+) / Penalty (\u2212)', color: '#64748b', font: { family: 'DM Sans', size: 12 } }, ticks: { color: '#475569', font: { family: 'DM Sans', size: 11 }, callback: function (v) { return (v >= 0 ? '+' : '') + fmt(v); } }, grid: { color: '#1e293b' } } }, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, titleColor: '#e2e8f0', bodyColor: '#cbd5e1', titleFont: { family: 'DM Sans', weight: '600' }, bodyFont: { family: 'DM Sans' }, padding: 12, callbacks: { title: function () { return ''; }, label: function (i) { var v = i.parsed.y; if (i.datasetIndex === 1) return 'Brackets only: ' + (v >= 0 ? '+' : '') + fmtD(v) + '/yr'; return (v >= 0 ? '\u2714 Saves ' : '\u2718 Costs ') + fmtD(v) + '/yr'; } } } } }, plugins: [fillPlugin, markerPlugin, posPlugin] });
 
             var COMP = { brackets: { label: 'Federal brackets', color: '#818cf8' }, ctc: { label: 'Child tax credit', color: '#fbbf24' }, salt: { label: 'Itemization / SALT', color: '#f97316' }, state: { label: 'State brackets', color: '#f43f5e' }, medicare: { label: 'Medicare surtax', color: '#a78bfa' }, niit: { label: 'NIIT', color: '#67e8f9' } };
 
@@ -1358,7 +1384,6 @@
                 document.getElementById('incAL').textContent = '$' + p.incA.toLocaleString();
                 document.getElementById('incBL').textContent = '$' + p.incB.toLocaleString();
                 document.getElementById('kidsL').textContent = p.kids;
-                markerX = p.incB;
                 var c = calcComponents(p.incA, p.incB, p.kids, p.state, p.home, p.med, p.niit, assum, p.mrgHome);
 
                 // Detect which assumption sliders actually affect the marriage penalty/bonus
@@ -1415,7 +1440,19 @@
                 } else bEl.innerHTML = '';
 
                 // Chart
-                var pts = [], bpts = []; for (var b = 0; b <= 8e5; b += 5e3) { pts.push({ x: b, y: calcComponents(p.incA, b, p.kids, p.state, p.home, p.med, p.niit, assum, p.mrgHome).net }); bpts.push({ x: b, y: calcBracketsOnly(p.incA, b, p.kids, p.state) }); }
+                // Chart: zoomed = 400K sliding window, full = 0-800K
+                var lo = 0, hi = 8e5;
+                if (chartZoomed) { var HALF = 2e5; lo = p.incB - HALF; hi = p.incB + HALF; if (lo < 0) { hi -= lo; lo = 0; } if (hi > 8e5) { lo -= (hi - 8e5); hi = 8e5; } lo = Math.max(0, lo); }
+                var step = chartZoomed ? 5e3 : 5e3;
+                var pts = [], bpts = [];
+                for (var b = lo; b <= hi; b += step) { pts.push({ x: b, y: calcComponents(p.incA, b, p.kids, p.state, p.home, p.med, p.niit, assum, p.mrgHome).net }); bpts.push({ x: b, y: calcBracketsOnly(p.incA, b, p.kids, p.state) }); }
+                markerX = p.incB;
+                chart.options.scales.x.min = lo; chart.options.scales.x.max = hi;
+                chart.options.scales.x.ticks.stepSize = chartZoomed ? 5e4 : 1e5;
+                chart.options.scales.x.ticks.callback = function (v) { return fmt(v); };
+                chart.options.plugins.tooltip.callbacks.title = function (items) { return 'You: ' + fmt(p.incA) + ' \xb7 Partner: ' + fmt(items[0].parsed.x); };
+                chart.options.scales.x.afterBuildTicks = undefined;
+
                 chart.data.datasets[0].data = pts; chart.data.datasets[1].data = bpts; chart.update('none');
 
                 // Notes
@@ -1440,6 +1477,7 @@
             ['chkMed', 'chkNIIT'].forEach(function (id) { document.getElementById(id).addEventListener('change', update); });
             document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (btn) { btn.addEventListener('click', function () { document.querySelectorAll('#homeCtrl .seg-btn').forEach(function (b) { b.classList.remove('on'); }); this.classList.add('on'); update(); }); });
             document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (btn) { btn.addEventListener('click', function () { document.querySelectorAll('#mrgHomeCtrl .seg-btn').forEach(function (b) { b.classList.remove('on'); }); this.classList.add('on'); update(); }); });
+            document.getElementById('chartZoom').addEventListener('click', function () { chartZoomed = !chartZoomed; this.style.borderColor = chartZoomed ? '' : '#f87171'; this.style.opacity = chartZoomed ? '' : '.9'; update(); });
             document.getElementById('howToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('howPanel').classList.toggle('open'); });
             document.getElementById('mathToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('mathPanel').classList.toggle('open'); });
             document.getElementById('assumeToggle').addEventListener('click', function () { this.classList.toggle('open'); document.getElementById('assumePanel').classList.toggle('open'); });
