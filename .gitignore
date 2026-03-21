@@ -1,0 +1,7 @@
+node_modules/
+dist/
+artifacts/
+*.msi
+claude.md
+.claude/
+docs/

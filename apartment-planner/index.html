@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Apartment Floor Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="phase-upload">
+
+    <!-- PHASE 1: Upload -->
+    <div id="upload-screen" class="screen">
+        <div class="upload-wrap">
+            <h1>Apartment Floor Planner</h1>
+            <p class="sub">Upload a floor plan, set scale, arrange furniture to scale.</p>
+            <button id="btn-upload" class="btn-primary">Upload Floor Plan</button>
+            <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" hidden>
+            <p class="hint">PNG, JPG, or WebP</p>
+        </div>
+    </div>
+
+    <!-- PHASE 2: Calibration / Detection -->
+    <div id="detect-screen" class="screen">
+        <div id="detect-toolbar">
+            <button id="detect-select" class="tool-btn active" data-tool="select" title="Select">↖</button>
+            <button id="detect-add" class="tool-btn" data-tool="add" title="Add Wall">+</button>
+            <button id="detect-door" class="tool-btn" data-tool="door" title="Mark Door">◠</button>
+            <button id="detect-eraser" class="tool-btn" data-tool="eraser" title="Eraser">✂</button>
+            <div class="tool-sep"></div>
+            <button id="detect-undo" class="tool-btn" title="Undo">↩</button>
+            <button id="detect-redo" class="tool-btn" title="Redo">↪</button>
+        </div>
+        <div id="detect-canvas-wrap">
+            <canvas id="detect-canvas"></canvas>
+            <svg id="detect-svg"></svg>
+        </div>
+        <div id="detect-panel">
+            <div id="detect-instructions">
+                <!-- Dynamic: changes per calibration step -->
+            </div>
+            <div id="detect-confidence" class="hidden">
+                <span id="confidence-value"></span>
+            </div>
+            <div id="detect-actions">
+                <button id="btn-confirm-detect" class="btn-primary hidden">Confirm Walls</button>
+                <button id="btn-skip-detect" class="btn-secondary">Skip to Manual Mode</button>
+                <button id="btn-retry-detect" class="btn-secondary hidden">Try Different Wall</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 3: Furniture Editor -->
+    <div id="editor-screen" class="screen">
+        <!-- Left toolbar -->
+        <div id="toolbar">
+            <button class="tool-btn active" data-tool="select" title="Select / Move (V)">↖</button>
+            <button class="tool-btn" data-tool="rect" title="Rectangle">▭</button>
+            <button class="tool-btn" data-tool="circle" title="Circle">○</button>
+            <button class="tool-btn" data-tool="lshape" title="L-Shape">⌐</button>
+            <button class="tool-btn" data-tool="door" title="Door">◠</button>
+            <button id="tool-scale" class="tool-btn hidden" data-tool="scale" title="Scale Line">📏</button>
+            <div class="tool-sep"></div>
+            <button id="btn-undo" class="tool-btn" title="Undo (Ctrl+Z)">↩</button>
+            <button id="btn-redo" class="tool-btn" title="Redo (Ctrl+Shift+Z)">↪</button>
+        </div>
+
+        <!-- SVG Canvas -->
+        <div id="canvas-wrap">
+            <svg id="main-svg" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid-pattern" width="1" height="1" patternUnits="userSpaceOnUse">
+                        <circle cx="0.5" cy="0.5" r="0.5" fill="rgba(255,255,255,0.08)"/>
+                    </pattern>
+                </defs>
+                <g id="layer-image"></g>
+                <rect id="grid-overlay" width="100%" height="100%" fill="url(#grid-pattern)" pointer-events="none"/>
+                <g id="layer-walls"></g>
+                <g id="layer-doors"></g>
+                <g id="layer-pieces"></g>
+                <g id="layer-guides" pointer-events="none"></g>
+                <g id="layer-selection" pointer-events="none"></g>
+            </svg>
+            <!-- Zoom controls -->
+            <div id="zoom-controls">
+                <button id="btn-zoom-in" title="Zoom In">+</button>
+                <button id="btn-zoom-out" title="Zoom Out">−</button>
+                <span id="zoom-level">100%</span>
+            </div>
+            <!-- Scale bar -->
+            <div id="scale-bar" class="hidden">
+                <div id="scale-bar-line"></div>
+                <span id="scale-bar-label"></span>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div id="panel">
+            <div id="props-section" class="panel-section hidden">
+                <div class="panel-label">Properties</div>
+                <div id="props-content">
+                    <div class="prop-name" id="prop-label-wrap">
+                        <label>Label</label>
+                        <input type="text" id="prop-label" placeholder="Label">
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-field">
+                            <label>W</label>
+                            <input type="number" id="prop-width" min="1" step="1"><span>"</span>
+                        </div>
+                        <div class="prop-field">
+                            <label>H</label>
+                            <input type="number" id="prop-height" min="1" step="1"><span>"</span>
+                        </div>
+                    </div>
+                    <div class="prop-row" id="prop-radius-row" hidden>
+                        <div class="prop-field">
+                            <label>R</label>
+                            <input type="number" id="prop-radius" min="1" step="1"><span>"</span>
+                        </div>
+                    </div>
+                    <div class="prop-row" id="prop-lshape-row" hidden>
+                        <div class="prop-field">
+                            <label>Cut W</label>
+                            <input type="number" id="prop-cut-w" min="1" step="1"><span>"</span>
+                        </div>
+                        <div class="prop-field">
+                            <label>Cut H</label>
+                            <input type="number" id="prop-cut-h" min="1" step="1"><span>"</span>
+                        </div>
+                    </div>
+                    <div class="prop-row" id="prop-cut-corner-row" hidden>
+                        <label>Cut Corner</label>
+                        <select id="prop-cut-corner">
+                            <option value="tl">Top Left</option>
+                            <option value="tr">Top Right</option>
+                            <option value="bl">Bottom Left</option>
+                            <option value="br">Bottom Right</option>
+                        </select>
+                    </div>
+                    <div class="prop-row">
+                        <div class="prop-field">
+                            <label>Angle</label>
+                            <input type="number" id="prop-rotation" min="0" max="359" step="45"><span>°</span>
+                        </div>
+                    </div>
+                    <div class="prop-actions">
+                        <button id="btn-lock" class="btn-small" title="Lock (Ctrl+L)">Lock</button>
+                        <button id="btn-dupe" class="btn-small" title="Duplicate (Ctrl+D)">Dupe</button>
+                        <button id="btn-delete" class="btn-small btn-danger" title="Delete (Del)">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <div id="pieces-section" class="panel-section">
+                <div class="panel-label">Pieces</div>
+                <div id="pieces-list"></div>
+                <button id="btn-add-piece" class="btn-secondary">+ Add Piece</button>
+            </div>
+            <div id="image-section" class="panel-section">
+                <div class="panel-label">Floor Plan</div>
+                <div class="prop-row">
+                    <label>Opacity</label>
+                    <input type="range" id="img-opacity" min="0" max="100" value="70">
+                    <span id="img-opacity-val">70%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation modal -->
+    <div id="modal-overlay" class="hidden">
+        <div id="modal">
+            <p id="modal-text"></p>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn-secondary">Cancel</button>
+                <button id="modal-confirm" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scale line modal (manual mode) -->
+    <div id="scale-modal" class="hidden">
+        <div id="scale-modal-inner">
+            <p>How long is this line in real life?</p>
+            <div class="prop-row">
+                <input type="number" id="scale-feet" min="1" placeholder="Feet" step="1">
+                <span>ft</span>
+                <input type="number" id="scale-inches" min="0" max="11" placeholder="In" step="1">
+                <span>in</span>
+            </div>
+            <button id="btn-set-scale" class="btn-primary">Set Scale</button>
+        </div>
+    </div>
+
+    <!-- Room dimensions modal (detection mode) -->
+    <div id="room-modal" class="hidden">
+        <div id="room-modal-inner">
+            <p>Enter this room's dimensions</p>
+            <div class="prop-row">
+                <div class="prop-field">
+                    <label>Width</label>
+                    <input type="number" id="room-width" min="1" placeholder="ft" step="1">
+                    <span>ft</span>
+                </div>
+                <div class="prop-field">
+                    <label>Height</label>
+                    <input type="number" id="room-height" min="1" placeholder="ft" step="1">
+                    <span>ft</span>
+                </div>
+            </div>
+            <div id="room-aspect-check" class="hidden"></div>
+            <button id="btn-set-room" class="btn-primary">Set Dimensions</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="planner.js"></script>
+</body>
+</html>
